@@ -1,26 +1,91 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #090716;
+  --foreground: #f7f3ff;
+  --surface: #151025;
+  --surface-strong: #211736;
+  --muted: #b9aecb;
+  --border: rgba(255, 255, 255, 0.14);
+  --violet: #7c3aed;
+  --violet-strong: #5b21b6;
+  --cyan: #67e8f9;
+  --rose: #fb7185;
+  --amber: #f8c66a;
+  --shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-strong: var(--surface-strong);
+  --color-muted: var(--muted);
+  --color-violet: var(--violet);
+  --color-cyan: var(--cyan);
+  --color-rose: var(--rose);
+  --color-amber: var(--amber);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--background);
 }
 
 body {
-  background: var(--background);
+  min-height: 100%;
+  margin: 0;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(139, 92, 246, 0.18), transparent 26rem),
+    radial-gradient(circle at 86% 12%, rgba(103, 232, 249, 0.12), transparent 24rem),
+    linear-gradient(145deg, #090716 0%, #151025 48%, #0a101f 100%);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+button,
+a,
+input {
+  font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid rgba(103, 232, 249, 0.8);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: rgba(103, 232, 249, 0.32);
+}
+
+.cosmic-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.moon-mask {
+  background: radial-gradient(circle at 38% 34%, #fff9d8 0%, #f8eeb5 34%, #c6bfd0 68%, #837894 100%);
+  box-shadow:
+    inset -22px -18px 34px rgba(45, 35, 68, 0.45),
+    0 18px 60px rgba(139, 92, 246, 0.28);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
