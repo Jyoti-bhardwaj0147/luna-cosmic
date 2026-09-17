@@ -1,75 +1,167 @@
 @import "tailwindcss";
 
 :root {
-  --background: #090716;
-  --foreground: #f7f3ff;
-  --surface: #151025;
-  --surface-strong: #211736;
-  --muted: #b9aecb;
-  --border: rgba(255, 255, 255, 0.14);
-  --violet: #7c3aed;
-  --violet-strong: #5b21b6;
-  --cyan: #67e8f9;
-  --rose: #fb7185;
-  --amber: #f8c66a;
-  --shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+  --luna-background: #07050f;
+  --luna-surface: #0d0918;
+  --luna-surface-elevated: #110d20;
+  --luna-surface-strong: #1a1430;
+  --luna-surface-glass: rgba(17, 13, 32, 0.72);
+  --luna-text-primary: #f1eeff;
+  --luna-text-secondary: #aaa4c2;
+  --luna-text-muted: #817a9d;
+  --luna-accent-primary: #8b5cf6;
+  --luna-accent-light: #a78bfa;
+  --luna-accent-pink: #d946ef;
+  --luna-accent-blue: #38bdf8;
+  --luna-border-subtle: #26203d;
+  --luna-border-strong: rgba(167, 139, 250, 0.42);
+  --luna-focus-ring: #38bdf8;
+  --shadow-soft: 0 20px 60px rgba(0, 0, 0, 0.34);
+  --shadow-accent: 0 14px 40px rgba(139, 92, 246, 0.24);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-surface: var(--surface);
-  --color-surface-strong: var(--surface-strong);
-  --color-muted: var(--muted);
-  --color-violet: var(--violet);
-  --color-cyan: var(--cyan);
-  --color-rose: var(--rose);
-  --color-amber: var(--amber);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--luna-background);
+  --color-foreground: var(--luna-text-primary);
+  --color-surface: var(--luna-surface);
+  --color-surface-elevated: var(--luna-surface-elevated);
+  --color-surface-strong: var(--luna-surface-strong);
+  --color-surface-glass: var(--luna-surface-glass);
+  --color-text-primary: var(--luna-text-primary);
+  --color-text-secondary: var(--luna-text-secondary);
+  --color-text-muted: var(--luna-text-muted);
+  --color-muted: var(--luna-text-secondary);
+  --color-accent-primary: var(--luna-accent-primary);
+  --color-accent-light: var(--luna-accent-light);
+  --color-accent-pink: var(--luna-accent-pink);
+  --color-accent-blue: var(--luna-accent-blue);
+  --color-border-subtle: var(--luna-border-subtle);
+  --color-border-strong: var(--luna-border-strong);
+  --color-violet: var(--luna-accent-primary);
+  --color-cyan: var(--luna-accent-blue);
+  --color-rose: var(--luna-accent-pink);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-cormorant);
 }
 
 * {
   box-sizing: border-box;
 }
 
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
 html {
   min-height: 100%;
-  background: var(--background);
+  background: var(--color-background);
+  color-scheme: dark;
+  overflow-x: clip;
 }
 
 body {
   min-height: 100%;
   margin: 0;
   background:
-    radial-gradient(circle at 18% 0%, rgba(139, 92, 246, 0.18), transparent 26rem),
-    radial-gradient(circle at 86% 12%, rgba(103, 232, 249, 0.12), transparent 24rem),
-    linear-gradient(145deg, #090716 0%, #151025 48%, #0a101f 100%);
-  color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+    radial-gradient(circle at 18% 0%, rgba(139, 92, 246, 0.16), transparent 28rem),
+    radial-gradient(circle at 88% 14%, rgba(56, 189, 248, 0.09), transparent 25rem),
+    linear-gradient(145deg, var(--color-background), var(--color-surface-elevated) 52%, #080b17);
+  color: var(--color-text-primary);
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 button,
 a,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
-button:focus-visible,
-a:focus-visible,
-[tabindex]:focus-visible {
-  outline: 3px solid rgba(103, 232, 249, 0.8);
+a {
+  color: inherit;
+  text-decoration-color: rgba(167, 139, 250, 0.62);
+  text-underline-offset: 0.2em;
+}
+
+button {
+  color: inherit;
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-focus-ring);
   outline-offset: 3px;
 }
 
 ::selection {
-  background: rgba(103, 232, 249, 0.32);
+  background: rgba(139, 92, 246, 0.48);
+  color: var(--color-text-primary);
 }
 
 .cosmic-shell {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.font-display {
+  font-family: var(--font-cormorant), Georgia, "Times New Roman", serif;
+}
+
+.cosmic-atmosphere {
+  position: relative;
+  isolation: isolate;
+}
+
+.cosmic-atmosphere::before,
+.cosmic-stars::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+  overflow: hidden;
+}
+
+.cosmic-atmosphere::before {
+  background:
+    radial-gradient(circle at 22% 35%, rgba(139, 92, 246, 0.14), transparent 34rem),
+    radial-gradient(circle at 84% 55%, rgba(56, 189, 248, 0.07), transparent 28rem);
+}
+
+.cosmic-stars {
+  position: relative;
+  isolation: isolate;
+}
+
+.cosmic-stars::before {
+  opacity: 0.4;
+  background-image:
+    radial-gradient(circle, rgba(241, 238, 255, 0.48) 0 1px, transparent 1.2px),
+    radial-gradient(circle, rgba(167, 139, 250, 0.38) 0 1px, transparent 1.2px);
+  background-position: 0 0, 43px 29px;
+  background-size: 83px 83px, 127px 127px;
+  mask-image: linear-gradient(to bottom, black, transparent 88%);
+}
+
+.cosmic-glass {
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-glass);
+  box-shadow:
+    inset 0 1px rgba(241, 238, 255, 0.04),
+    var(--shadow-soft);
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  .cosmic-glass {
+    backdrop-filter: blur(16px);
+  }
 }
 
 .moon-mask {
@@ -87,5 +179,18 @@ a:focus-visible,
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid Highlight;
+  }
+
+  .cosmic-glass {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+    forced-color-adjust: auto;
   }
 }

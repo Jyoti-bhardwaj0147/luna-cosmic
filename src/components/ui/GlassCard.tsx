@@ -1,11 +1,18 @@
-import type { PropsWithChildren } from "react";
+import type { HTMLAttributes } from "react";
 
-export function GlassCard({ children, className = "" }: PropsWithChildren<{ className?: string }>) {
+type GlassCardProps = HTMLAttributes<HTMLElement> & {
+  as?: "article" | "div" | "section";
+};
+
+export function GlassCard({
+  as: Component = "section",
+  children,
+  className = "",
+  ...props
+}: GlassCardProps) {
   return (
-    <section
-      className={`rounded-lg border border-white/15 bg-white/[0.08] shadow-[var(--shadow)] backdrop-blur-xl ${className}`}
-    >
+    <Component className={`cosmic-glass rounded-2xl ${className}`} {...props}>
       {children}
-    </section>
+    </Component>
   );
 }
