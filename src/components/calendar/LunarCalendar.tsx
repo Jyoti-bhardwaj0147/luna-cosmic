@@ -2,154 +2,285 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { KeyboardEvent } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { LocalDate, MoonData } from "@/types/moon";
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { CalendarDay } from "@/components/calendar/CalendarDay";
+import { SelectedDateDetails } from "@/components/calendar/SelectedDateDetails";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { IconButton } from "@/components/ui/IconButton";
 import { getMoonData } from "@/lib/astronomy/moon";
 import {
   addDays,
   addMonths,
+  createLocalDate,
   dateToLocalDate,
   formatLocalDate,
-  generateMonthDays,
+  generateMonthGrid,
+  getNextMonth,
+  getPreviousMonth,
   isSameLocalDate,
+  type CalendarMonth,
 } from "@/lib/dates/local-date";
-import { Button } from "@/components/ui/Button";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { MoonSummary } from "@/components/moon/MoonDetails";
+import type { LocalDate } from "@/types/moon";
 
 type LunarCalendarProps = {
   initialDate?: LocalDate;
 };
 
-const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const weekdays = [
+  { short: "Mon", long: "Monday" },
+  { short: "Tue", long: "Tuesday" },
+  { short: "Wed", long: "Wednesday" },
+  { short: "Thu", long: "Thursday" },
+  { short: "Fri", long: "Friday" },
+  { short: "Sat", long: "Saturday" },
+  { short: "Sun", long: "Sunday" },
+] as const;
+
+const subscribe = () => () => {};
+const getServerSnapshot = () => null;
+const getLocalDaySnapshot = () => {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  return date.getTime();
+};
 
 function dateKey(date: LocalDate): string {
-  return `${date.year}-${date.month}-${date.day}`;
+  return `${date.year}-${String(date.month).padStart(2, "0")}-${String(date.day).padStart(2, "0")}`;
 }
 
-function dayOfWeek(date: LocalDate): number {
-  return new Date(Date.UTC(date.year, date.month - 1, date.day, 12)).getUTCDay();
+function sameMonth(date: LocalDate, month: CalendarMonth): boolean {
+  return date.year === month.year && date.month === month.month;
 }
 
-export function LunarCalendar({ initialDate }: LunarCalendarProps) {
-  const today = useMemo(() => initialDate ?? dateToLocalDate(new Date()), [initialDate]);
-  const [visibleMonth, setVisibleMonth] = useState<LocalDate>({
-    year: today.year,
-    month: today.month,
-    day: 1,
-  });
-  const [selectedDate, setSelectedDate] = useState<LocalDate>(today);
-  const shouldFocusSelectedDate = useRef(false);
+function copyDate(date: LocalDate): LocalDate {
+  return createLocalDate(date.year, date.month, date.day);
+}
+
+type CalendarControllerProps = {
+  headingId: string;
+  initialDate: LocalDate;
+  today: LocalDate;
+};
+
+function CalendarController({ headingId, initialDate, today }: CalendarControllerProps) {
+  const [currentMonth, setCurrentMonth] = useState<CalendarMonth>(() => ({
+    year: initialDate.year,
+    month: initialDate.month,
+  }));
+  const [selectedDate, setSelectedDate] = useState<LocalDate>(() => copyDate(initialDate));
+  const [focusedDate, setFocusedDate] = useState<LocalDate>(() => copyDate(initialDate));
+  const pendingFocusKey = useRef<string | null>(null);
   const dayRefs = useRef(new Map<string, HTMLButtonElement>());
-  const days = useMemo(() => generateMonthDays(visibleMonth), [visibleMonth]);
-  const selectedMoon = useMemo<MoonData>(() => getMoonData(selectedDate), [selectedDate]);
+
+  const calendarDays = useMemo(
+    () => generateMonthGrid(currentMonth).map((day, index) => ({
+      ...day,
+      columnIndex: index % 7,
+      key: dateKey(day.date),
+      moon: getMoonData(day.date),
+    })),
+    [currentMonth],
+  );
+  const monthLabel = formatLocalDate(
+    { year: currentMonth.year, month: currentMonth.month, day: 1 },
+    { month: "long", year: "numeric" },
+  );
+  const focusedKey = dateKey(focusedDate);
+  const rovingKey = calendarDays.some((day) => day.key === focusedKey)
+    ? focusedKey
+    : calendarDays.find((day) => day.isCurrentMonth)?.key ?? calendarDays[0].key;
+  const selectedKey = dateKey(selectedDate);
+  const selectedMoon = useMemo(
+    () => calendarDays.find((day) => day.key === selectedKey)?.moon ?? getMoonData(selectedDate),
+    [calendarDays, selectedDate, selectedKey],
+  );
 
   useEffect(() => {
-    if (!shouldFocusSelectedDate.current) {
+    const key = pendingFocusKey.current;
+    if (!key) return;
+
+    const button = dayRefs.current.get(key);
+    if (button) {
+      pendingFocusKey.current = null;
+      button.focus();
+    }
+  }, [calendarDays]);
+
+  function focusDate(date: LocalDate) {
+    const target = copyDate(date);
+    if (sameMonth(target, currentMonth)) {
+      dayRefs.current.get(dateKey(target))?.focus();
       return;
     }
 
-    dayRefs.current.get(dateKey(selectedDate))?.focus();
-    shouldFocusSelectedDate.current = false;
-  }, [selectedDate, days]);
-
-  function moveMonth(months: number) {
-    const nextMonth = addMonths(visibleMonth, months);
-    setVisibleMonth({ year: nextMonth.year, month: nextMonth.month, day: 1 });
+    pendingFocusKey.current = dateKey(target);
+    setFocusedDate(target);
+    setCurrentMonth({ year: target.year, month: target.month });
   }
 
-  function selectDate(date: LocalDate, shouldFocus = false) {
-    setSelectedDate(date);
-    setVisibleMonth({ year: date.year, month: date.month, day: 1 });
-    shouldFocusSelectedDate.current = shouldFocus;
+  function activateDate(date: LocalDate) {
+    const target = copyDate(date);
+    const changesMonth = !sameMonth(target, currentMonth);
+    setSelectedDate(target);
+    setFocusedDate(target);
+
+    if (changesMonth) {
+      pendingFocusKey.current = dateKey(target);
+      setCurrentMonth({ year: target.year, month: target.month });
+    }
   }
 
-  function handleDayKeyDown(event: KeyboardEvent<HTMLButtonElement>, date: LocalDate) {
-    const keyOffset: Record<string, number> = {
-      ArrowLeft: -1,
-      ArrowRight: 1,
-      ArrowUp: -7,
-      ArrowDown: 7,
-      Home: -dayOfWeek(date),
-      End: 6 - dayOfWeek(date),
-    };
-    const offset = keyOffset[event.key];
+  function moveDisplayedMonth(direction: -1 | 1) {
+    const nextMonth = direction === -1
+      ? getPreviousMonth(currentMonth)
+      : getNextMonth(currentMonth);
+    pendingFocusKey.current = null;
+    setCurrentMonth(nextMonth);
+    setFocusedDate((date) => addMonths(date, direction));
+  }
 
-    if (offset === undefined) {
-      return;
+  function handleDayKeyDown(
+    event: KeyboardEvent<HTMLButtonElement>,
+    date: LocalDate,
+    columnIndex: number,
+  ) {
+    let target: LocalDate | null = null;
+
+    switch (event.key) {
+      case "Enter":
+      case " ":
+        event.preventDefault();
+        activateDate(date);
+        return;
+      case "ArrowLeft":
+        target = addDays(date, -1);
+        break;
+      case "ArrowRight":
+        target = addDays(date, 1);
+        break;
+      case "ArrowUp":
+        target = addDays(date, -7);
+        break;
+      case "ArrowDown":
+        target = addDays(date, 7);
+        break;
+      case "Home":
+        target = addDays(date, -columnIndex);
+        break;
+      case "End":
+        target = addDays(date, 6 - columnIndex);
+        break;
+      case "PageUp":
+        target = addMonths(date, -1);
+        break;
+      case "PageDown":
+        target = addMonths(date, 1);
+        break;
+      default:
+        return;
     }
 
     event.preventDefault();
-    selectDate(addDays(date, offset), true);
+    focusDate(target);
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-      <GlassCard className="p-4 sm:p-5">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <Button aria-label="Previous month" onClick={() => moveMonth(-1)} type="button" variant="secondary">
-            <ChevronLeft aria-hidden="true" size={18} />
-          </Button>
-          <h1 className="text-center text-xl font-semibold text-foreground sm:text-2xl">
-            {formatLocalDate(visibleMonth, { month: "long", year: "numeric" })}
-          </h1>
-          <Button aria-label="Next month" onClick={() => moveMonth(1)} type="button" variant="secondary">
-            <ChevronRight aria-hidden="true" size={18} />
-          </Button>
-        </div>
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-stretch">
+      <GlassCard as="div" className="min-w-0 overflow-hidden p-2.5 sm:p-5">
+        <header className="mb-3 flex items-center justify-between gap-2 px-1 sm:mb-5">
+          <IconButton
+            className="focus-visible:border-accent-blue focus-visible:outline-[3px]! focus-visible:outline-solid! focus-visible:outline-accent-blue! focus-visible:outline-offset-2!"
+            icon={<ChevronLeft size={18} strokeWidth={1.8} />}
+            label="Show previous month"
+            onClick={() => moveDisplayedMonth(-1)}
+          />
+          <h2 className="min-w-0 text-center font-display text-xl font-semibold leading-tight text-text-primary sm:text-2xl" id={headingId}>
+            {monthLabel}
+          </h2>
+          <IconButton
+            className="focus-visible:border-accent-blue focus-visible:outline-[3px]! focus-visible:outline-solid! focus-visible:outline-accent-blue! focus-visible:outline-offset-2!"
+            icon={<ChevronRight size={18} strokeWidth={1.8} />}
+            label="Show next month"
+            onClick={() => moveDisplayedMonth(1)}
+          />
+        </header>
 
-        <div aria-label="Lunar calendar" className="grid gap-1" role="grid">
-          <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold uppercase text-muted" role="row">
-            {weekdays.map((weekday) => (
-              <div key={weekday} className="py-2" role="columnheader">
-                {weekday}
-              </div>
-            ))}
-          </div>
-          {Array.from({ length: 6 }, (_, weekIndex) => (
-            <div className="grid grid-cols-7 gap-1" key={weekIndex} role="row">
-              {days.slice(weekIndex * 7, weekIndex * 7 + 7).map(({ date, isCurrentMonth }) => {
-                const moon = getMoonData(date);
-                const selected = isSameLocalDate(date, selectedDate);
-
-                return (
-                  <button
-                    aria-label={`${formatLocalDate(date, {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}, ${moon.phaseName}`}
-                    aria-selected={selected}
-                    className={`min-h-20 rounded-lg border p-2 text-left transition-colors sm:min-h-24 ${
-                      selected
-                        ? "border-cyan bg-cyan/15 text-foreground"
-                        : "border-white/10 bg-white/[0.04] hover:bg-white/[0.08]"
-                    } ${isCurrentMonth ? "text-foreground" : "text-muted/55"}`}
-                    key={dateKey(date)}
-                    onClick={() => selectDate(date)}
-                    onKeyDown={(event) => handleDayKeyDown(event, date)}
-                    ref={(node) => {
-                      if (node) {
-                        dayRefs.current.set(dateKey(date), node);
-                      } else {
-                        dayRefs.current.delete(dateKey(date));
-                      }
-                    }}
-                    role="gridcell"
-                    tabIndex={selected ? 0 : -1}
-                    type="button"
-                  >
-                    <span className="block text-sm font-semibold">{date.day}</span>
-                    <span className="mt-2 block h-6 w-6 rounded-full moon-mask" aria-hidden="true" />
-                    <span className="sr-only">{moon.phaseName}</span>
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-        </div>
+        <table className="w-full table-fixed border-separate border-spacing-0" aria-describedby={`${headingId}-instructions`}>
+          <caption className="sr-only">
+            {monthLabel} lunar calendar, Monday through Sunday.
+          </caption>
+          <thead>
+            <tr>
+              {weekdays.map((weekday) => (
+                <th className="pb-1.5 text-center text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-text-secondary sm:pb-2 sm:text-xs" key={weekday.long} scope="col">
+                  <span aria-hidden="true">{weekday.short}</span>
+                  <span className="sr-only">{weekday.long}</span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: calendarDays.length / 7 }, (_, weekIndex) => {
+              const week = calendarDays.slice(weekIndex * 7, weekIndex * 7 + 7);
+              return (
+                <tr key={`${week[0].key}-${week[6].key}`}>
+                  {week.map((day) => (
+                    <CalendarDay
+                      buttonRef={(node) => {
+                        if (node) dayRefs.current.set(day.key, node);
+                        else dayRefs.current.delete(day.key);
+                      }}
+                      date={day.date}
+                      isCurrentMonth={day.isCurrentMonth}
+                      isSelected={day.key === selectedKey}
+                      isToday={isSameLocalDate(day.date, today)}
+                      key={day.key}
+                      moon={day.moon}
+                      onActivate={activateDate}
+                      onFocusDate={(date) => {
+                        if (!isSameLocalDate(date, focusedDate)) setFocusedDate(copyDate(date));
+                      }}
+                      onKeyDown={(event, date) => handleDayKeyDown(event, date, day.columnIndex)}
+                      tabIndex={day.key === rovingKey ? 0 : -1}
+                    />
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+        <p className="sr-only" id={`${headingId}-instructions`}>
+          Use the arrow keys to move by day or week, Home and End to move within a week, and Page Up and Page Down to move by month. Press Enter or Space to select a date.
+        </p>
       </GlassCard>
-      <MoonSummary date={selectedDate} moon={selectedMoon} />
+
+      <SelectedDateDetails date={selectedDate} moon={selectedMoon} />
     </div>
+  );
+}
+
+export function LunarCalendar({ initialDate }: LunarCalendarProps) {
+  const headingId = useId();
+  const localDay = useSyncExternalStore(subscribe, getLocalDaySnapshot, getServerSnapshot);
+  const suppliedDate = initialDate ? copyDate(initialDate) : null;
+  const resolvedDate = suppliedDate
+    ?? (localDay === null ? null : dateToLocalDate(new Date(localDay)));
+
+  return (
+    <section aria-labelledby={headingId}>
+      {resolvedDate ? (
+        <CalendarController
+          headingId={headingId}
+          initialDate={resolvedDate}
+          key={dateKey(resolvedDate)}
+          today={resolvedDate}
+        />
+      ) : (
+        <GlassCard as="div" className="flex min-h-80 items-center justify-center p-6 text-center">
+          <h2 className="sr-only" id={headingId}>Lunar calendar</h2>
+          <p className="text-sm text-text-secondary" role="status">Preparing your local lunar calendar…</p>
+        </GlassCard>
+      )}
+    </section>
   );
 }
