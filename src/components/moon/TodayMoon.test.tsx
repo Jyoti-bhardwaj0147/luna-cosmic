@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MOON_PHASE_NAMES } from "@/constants/phases";
 import { getMoonData } from "@/lib/astronomy/moon";
 import { localDateToUtcNoon } from "@/lib/dates/local-date";
+import { HomeExperience } from "@/components/HomeExperience";
 import { TodayMoon } from "./TodayMoon";
 import { TodayMoonContent } from "./TodayMoonContent";
 import { createTodayMoonViewModel, PHASE_DESCRIPTIONS } from "./today-moon";
@@ -118,6 +119,36 @@ describe("visitor-local date and hydration", () => {
       expect(container.querySelector("h2")?.textContent).toBe(model.moon.phaseName);
       expect(container.querySelector("svg")?.getAttribute("data-illumination")).toBe(String(model.moon.illuminationPercentage));
       expect(errors).toEqual([]);
+    } finally {
+      await act(async () => root?.unmount());
+      container.remove();
+    }
+  });
+
+  it("keeps the homepage stable during hydration when the local date differs from server time", async () => {
+    vi.setSystemTime(new Date("2026-09-19T02:30:00Z"));
+    vi.spyOn(Date.prototype, "getFullYear").mockReturnValue(2026);
+    vi.spyOn(Date.prototype, "getMonth").mockReturnValue(8);
+    vi.spyOn(Date.prototype, "getDate").mockReturnValue(18);
+    vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+
+    const serverMarkup = renderToString(createElement(HomeExperience));
+    expect(serverMarkup).toContain("Your local calendar date");
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    container.innerHTML = serverMarkup;
+
+    const errors: unknown[] = [];
+    let root: Root | undefined;
+    try {
+      await act(async () => {
+        root = hydrateRoot(container, createElement(HomeExperience), {
+          onRecoverableError: error => errors.push(error),
+        });
+      });
+      expect(errors).toEqual([]);
+      expect(container.querySelector("time")?.getAttribute("datetime")).toBe("2026-09-18");
     } finally {
       await act(async () => root?.unmount());
       container.remove();
