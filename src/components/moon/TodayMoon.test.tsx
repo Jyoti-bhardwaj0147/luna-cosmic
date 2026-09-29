@@ -148,7 +148,11 @@ describe("visitor-local date and hydration", () => {
         });
       });
       expect(errors).toEqual([]);
-      expect(container.querySelector("time")?.getAttribute("datetime")).toBe("2026-09-18");
+      const todayButton = container.querySelector('button[aria-current="date"]');
+      expect(todayButton?.getAttribute("aria-label")).toContain("Friday, September 18, 2026");
+      expect(todayButton?.getAttribute("aria-pressed")).toBe("true");
+      const heroMoon = container.querySelector('main.luna-home svg[data-size="lg"]');
+      expect(heroMoon?.getAttribute("data-phase")).toBe(getMoonData(fixedDate).phaseName);
     } finally {
       await act(async () => root?.unmount());
       container.remove();

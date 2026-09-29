@@ -23,13 +23,13 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Luna Cosmic Violet",
-    template: "%s | Luna Cosmic Violet",
+    default: "Luna Cosmic",
+    template: "%s | Luna Cosmic",
   },
   description: "A local lunar calendar for Moon phase, illumination, age, and nearby major phases.",
-  applicationName: "Luna Cosmic Violet",
+  applicationName: "Luna Cosmic",
   openGraph: {
-    title: "Luna Cosmic Violet",
+    title: "Luna Cosmic",
     description: "Explore lunar phases with local calendar-date calculations.",
     type: "website",
   },

@@ -201,6 +201,87 @@ describe("interactive lunar calendar structure and data", () => {
     expectOneRovingTabStop(today);
   });
 
+  it("omits selected-date details in the homepage layout while retaining date selection", () => {
+    const { container } = render(<LunarCalendar initialDate={fixedDate} showSelectedDateDetails={false} showTwoWeeks />);
+    expect(container.querySelector("aside")).toBeNull();
+    expect(container.querySelector("section > div")?.className).toBe("grid gap-6");
+
+    const selected = getDateButton("Friday, September 18, 2026");
+    const next = getDateButton("Saturday, September 19, 2026");
+    expect(selected.getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(next);
+    expect(next.getAttribute("aria-pressed")).toBe("true");
+    expect(container.querySelector("aside")).toBeNull();
+  });
+
+  it.each([
+    [{ year: 2026, month: 9, day: 18 }, "Monday, September 14, 2026", "Sunday, September 27, 2026"],
+    [{ year: 2026, month: 12, day: 31 }, "Monday, December 28, 2026", "Sunday, January 10, 2027"],
+  ] as const)("shows the current Monday-Sunday week and the next week from %j", (initialDate, firstDate, lastDate) => {
+    const { container } = render(<LunarCalendar initialDate={initialDate} showTwoWeeks showSelectedDateDetails={false} />);
+    expect(container.querySelectorAll("tbody tr")).toHaveLength(2);
+    expect(container.querySelectorAll("tbody td")).toHaveLength(14);
+    expect(getGridButtons()[0].getAttribute("aria-label")).toContain(firstDate);
+    expect(getGridButtons()[13].getAttribute("aria-label")).toContain(lastDate);
+    expectMonthHeading(formatLocalDate(initialDate, { month: "long", year: "numeric" }));
+    expect(getNavigationButton("Show previous two weeks")).toBeTruthy();
+    expect(getNavigationButton("Show next two weeks")).toBeTruthy();
+    expect(container.querySelector("aside")).toBeNull();
+  });
+
+  it("moves the homepage range by two weeks while keeping its month header", () => {
+    const { container } = render(<LunarCalendar initialDate={fixedDate} showTwoWeeks showSelectedDateDetails={false} />);
+    const next = getNavigationButton("Show next two weeks");
+    next.focus();
+    fireEvent.click(next);
+    expectMonthHeading("October 2026");
+    expect(getGridButtons()[0].getAttribute("aria-label")).toContain("Monday, September 28, 2026");
+    expect(getGridButtons()[13].getAttribute("aria-label")).toContain("Sunday, October 11, 2026");
+    expect(container.querySelectorAll("tbody td")).toHaveLength(14);
+    expect(document.activeElement).toBe(next);
+
+    fireEvent.click(next);
+    expectMonthHeading("October 2026");
+    expect(getGridButtons()[0].getAttribute("aria-label")).toContain("Monday, October 12, 2026");
+    const previous = getNavigationButton("Show previous two weeks");
+    fireEvent.click(previous);
+    expect(getGridButtons()[0].getAttribute("aria-label")).toContain("Monday, September 28, 2026");
+    fireEvent.click(previous);
+    expectMonthHeading("September 2026");
+  });
+
+  it("uses dotted borders only for next-month dates in the homepage range", () => {
+    const { unmount } = render(<LunarCalendar initialDate={{ year: 2026, month: 9, day: 29 }} showTwoWeeks showSelectedDateDetails={false} />);
+    const september = getDateButton("Wednesday, September 30, 2026");
+    const october = getDateButton("Thursday, October 1, 2026");
+    expect(september.className).not.toContain("border-dotted");
+    expect(october.className).toContain("border-dotted");
+    expect(october.className).toContain("hover:border-dotted");
+    fireEvent.click(october);
+    expect(october.className).toContain("border-dotted");
+    unmount();
+
+    render(<LunarCalendar initialDate={{ year: 2026, month: 9, day: 29 }} />);
+    const monthlyOctober = getDateButton("Thursday, October 1, 2026");
+    expect(monthlyOctober.className).toContain("border-dashed");
+    expect(monthlyOctober.className).not.toContain("border-dotted");
+  });
+
+  it("keeps keyboard focus within the two visible weeks", () => {
+    render(<LunarCalendar initialDate={fixedDate} showTwoWeeks showSelectedDateDetails={false} />);
+    const first = getDateButton("Monday, September 14, 2026");
+    const last = getDateButton("Sunday, September 27, 2026");
+    fireEvent.click(first);
+    first.focus();
+    fireEvent.keyDown(first, { key: "ArrowLeft" });
+    expect(document.activeElement).toBe(first);
+    fireEvent.click(last);
+    last.focus();
+    fireEvent.keyDown(last, { key: "ArrowRight" });
+    expect(document.activeElement).toBe(last);
+    expectOneRovingTabStop(last);
+  });
+
   it("renders complete selected-date details with unchanged astronomy values", () => {
     const { container } = render(<LunarCalendar initialDate={fixedDate} />);
     const moon = getMoonData(fixedDate);

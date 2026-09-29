@@ -107,9 +107,49 @@ button {
 }
 
 .cosmic-shell {
+  --luna-header-height: 180px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+.cosmic-shell > main:not(.luna-home):not(.flex)::before {
+  content: "";
+  display: block;
+  height: var(--luna-header-height);
+}
+
+.cosmic-shell > main.flex:not(.luna-home) {
+  padding-top: calc(var(--luna-header-height) + 4rem);
+}
+
+.luna-home-hero {
+  min-height: 100vh;
+  min-height: 100svh;
+  padding-top: calc(var(--luna-header-height) + 2.5rem);
+  padding-bottom: 5.5rem;
+}
+
+@media (min-width: 360px) {
+  .cosmic-shell {
+    --luna-header-height: 126px;
+  }
+}
+
+@media (min-width: 640px) {
+  .cosmic-shell {
+    --luna-header-height: 72px;
+  }
+
+  .luna-home-hero {
+    padding-top: calc(var(--luna-header-height) + 3.5rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .luna-home-hero {
+    padding-top: calc(var(--luna-header-height) + 5rem);
+  }
 }
 
 .font-display {

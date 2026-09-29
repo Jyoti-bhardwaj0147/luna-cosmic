@@ -7,6 +7,7 @@ type CalendarDayProps = {
   date: LocalDate;
   moon: MoonData;
   isCurrentMonth: boolean;
+  isNextMonth?: boolean;
   isSelected: boolean;
   isToday: boolean;
   tabIndex: 0 | -1;
@@ -29,6 +30,7 @@ export function CalendarDay({
   date,
   moon,
   isCurrentMonth,
+  isNextMonth = false,
   isSelected,
   isToday,
   tabIndex,
@@ -56,7 +58,7 @@ export function CalendarDay({
             : isCurrentMonth
               ? "border-border-subtle bg-white/[0.025] text-text-primary hover:border-border-strong hover:bg-white/[0.055]"
               : "border-dashed border-border-subtle bg-transparent text-text-muted hover:border-border-strong hover:bg-white/[0.035]"
-        } ${isToday ? "ring-1 ring-inset ring-accent-blue/80" : ""}`}
+        } ${isNextMonth ? "border-dotted hover:border-dotted" : ""} ${isToday ? "ring-1 ring-inset ring-accent-blue/80" : ""}`}
         onClick={() => onActivate(date)}
         onFocus={() => onFocusDate(date)}
         onKeyDown={(event) => onKeyDown(event, date)}
