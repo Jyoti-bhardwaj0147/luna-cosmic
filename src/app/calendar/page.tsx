@@ -10,6 +10,7 @@ export default function CalendarPage() {
         <div className="relative z-[1] mb-8">
           <SectionHeading
             eyebrow="Calendar"
+            level="h1"
             title="Monthly lunar calendar"
             description="Select a date to update phase, illumination, age, and surrounding major phases."
           />

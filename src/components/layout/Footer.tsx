@@ -5,7 +5,7 @@ import { Container } from "@/components/ui/Container";
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t border-white/10 bg-background/80 text-sm text-muted">
+    <footer className="mt-auto  bg-background/80 text-sm text-muted">
       <Container>
         <div className="flex flex-col gap-4 border-b border-white/10 py-4 sm:py-1 sm:flex-row sm:items-center sm:justify-between">
           <Link href="/" className="inline-flex w-fit items-center">

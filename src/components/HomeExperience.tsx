@@ -134,11 +134,13 @@ export function HomeExperience() {
     return (
       <main className="luna-home flex-1">
         {/* Loading hero section: start */}
-        <section className="luna-home-hero relative bg-[url('/images/bg-hero.png')] bg-cover bg-center py-10 sm:py-14 lg:py-20">
-          <div aria-hidden="true" className="absolute inset-0 bg-background/30" />
+        <section className="luna-home-hero relative py-10 sm:py-14 lg:py-20">
+          <div aria-hidden="true" className="luna-hero-background pointer-events-none absolute inset-0 bg-[url('/images/bg-hero.png')] bg-cover bg-center">
+            <div className="absolute inset-0 bg-background/30" />
+          </div>
           <Container className="relative">
-            <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_26rem]">
-              <div>
+            <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
+              <div className="min-w-0 lg:col-span-6">
                 <p className="text-sm font-semibold uppercase text-cyan">Your local calendar date</p>
                 <div className="mt-4 h-10 w-52 rounded-md bg-white/[0.08]" />
                 <div className="mt-4 h-12 w-full max-w-72 rounded-md bg-white/[0.08]" />
@@ -149,7 +151,7 @@ export function HomeExperience() {
                   <div className="h-11 w-36 rounded-full bg-white/[0.08]" />
                 </div>
               </div>
-              <GlassCard className="flex min-h-[20rem] items-center justify-center p-8">
+              <GlassCard className="flex min-h-[20rem] min-w-0 items-center justify-center p-8 lg:col-span-6">
                 <div className="aspect-square w-full max-w-sm rounded-full border border-border-subtle bg-surface" />
               </GlassCard>
             </div>
@@ -167,11 +169,13 @@ export function HomeExperience() {
   return (
     <main ref={mainRef} className="luna-home flex-1">
       {/* Hero section: start */}
-      <section className="luna-home-hero relative bg-[url('/images/bg-hero.png')] bg-cover bg-center py-10 sm:py-14 lg:py-20">
-        <div aria-hidden="true" className="absolute inset-0 bg-background/30" />
+      <section className="luna-home-hero relative py-10 sm:py-14 lg:py-20">
+        <div aria-hidden="true" className="luna-hero-background pointer-events-none absolute inset-0 bg-[url('/images/bg-hero.png')] bg-cover bg-center">
+          <div className="absolute inset-0 bg-background/30" />
+        </div>
         <Container className="relative">
-          <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_26rem]">
-            <div>
+          <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
+            <div className="min-w-0 lg:col-span-6">
               <p className="text-sm font-semibold uppercase text-cyan">
                 The Moon, Every Day
               </p>
@@ -181,7 +185,7 @@ export function HomeExperience() {
               <p className="mt-5 max-w-2xl text-base leading-7 text-muted sm:text-lg">
                 Track today&apos;s lunar phase, illumination, age, and nearby major phases with local calculations.
               </p>
-              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <ButtonLink href="/calendar">
                   Open calendar <ArrowRight aria-hidden="true" size={18} />
                 </ButtonLink>
@@ -190,7 +194,7 @@ export function HomeExperience() {
                 </ButtonLink>
               </div>
             </div>
-            <GlassCard data-luna-hero className="flex justify-center p-8">
+            <GlassCard data-luna-hero className="flex min-w-0 justify-center p-8 lg:col-span-6">
               <MoonVisual moon={moon} />
             </GlassCard>
           </div>
@@ -200,9 +204,11 @@ export function HomeExperience() {
       {/* Hero section: end */}
 
       {/* Lunar calendar section: start */}
-      <section className="relative bg-[url('/images/bg-calendar.png')] bg-cover bg-center pt-12 pb-12 sm:pb-16 lg:pt-16 lg:pb-20">
-        <div aria-hidden="true" className="absolute inset-0 bg-background/30" />
-        <Container>
+      <section className="relative pt-12 pb-12 sm:pb-16 lg:pt-16 lg:pb-20">
+        <div aria-hidden="true" className="luna-calendar-background luna-section-shadow pointer-events-none absolute inset-0 bg-[url('/images/bg-calendar.png')] bg-cover bg-center">
+          <div className="absolute inset-0 bg-background/30" />
+        </div>
+        <Container className="relative">
           <div className="relative z-[1] mb-8">
           <SectionHeading
             eyebrow="Lunar Calendar"
@@ -221,8 +227,10 @@ export function HomeExperience() {
 
 
       {/* Today's Moon section: start */}
-      <section className="relative bg-[url('/images/bg-today-moon.png')] bg-cover bg-center pt-12 pb-12 sm:pb-16 lg:pt-16 lg:pb-20">
-        <div aria-hidden="true" className="absolute inset-0 bg-background/30" />
+      <section className="relative pt-12 pb-12 sm:pb-16 lg:pt-16 lg:pb-20">
+        <div aria-hidden="true" className="luna-today-background luna-section-shadow pointer-events-none absolute inset-0 bg-[url('/images/bg-today-moon.png')] bg-cover bg-center">
+          <div className="absolute inset-0 bg-background/30" />
+        </div>
         <Container className="relative">
           <div data-luna-reveal className="grid grid-cols-1 gap-8 lg:grid-cols-[1.05fr_1.15fr] lg:items-center">
             <div className="max-w-xl">
@@ -324,8 +332,10 @@ export function HomeExperience() {
 
 
       {/* Lunar journey CTA section: start */}
-      <section className="relative isolate overflow-hidden bg-[url('/images/bg-lunar-journey.png')] bg-cover bg-center py-10 text-center sm:py-12 lg:py-16">
-        <div aria-hidden="true" className="absolute inset-0 bg-background/35" />
+      <section className="luna-journey-cta relative isolate overflow-hidden py-10 text-center sm:py-12 lg:py-16">
+        <div aria-hidden="true" className="luna-journey-background luna-section-shadow pointer-events-none absolute inset-0 bg-[url('/images/bg-lunar-journey.png')] bg-cover bg-center">
+          <div className="absolute inset-0 bg-background/65" />
+        </div>
         <Container className="relative">
           <div data-luna-reveal className="mx-auto flex max-w-2xl flex-col items-center">
             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-light sm:text-sm">
