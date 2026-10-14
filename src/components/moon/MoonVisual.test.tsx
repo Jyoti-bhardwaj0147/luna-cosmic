@@ -49,7 +49,7 @@ describe("MoonVisual public rendering contract", () => {
     expect(dark).toMatch(/<clipPath[^>]+><\/clipPath>/);
     expect(full).toMatch(/<clipPath[^>]+><circle/);
     expect(dark).toMatch(/stroke="url\(#moon-rim-/);
-    expect(full).toContain("<ellipse");
+    expect(full).toContain('<image href="/images/moon.png"');
   });
 
   it.each<MoonVisualSize>(["xs", "sm", "md", "lg", "xl"])("supports size %s and className", size => {
@@ -57,6 +57,7 @@ describe("MoonVisual public rendering contract", () => {
     expect(html).toContain(`data-size="${size}"`);
     expect(html).toContain("test-class");
     expect(html).toContain("max-width:100%");
+    expect(html).toContain('<image href="/images/moon.png"');
   });
 
   it("hides decorative content and supports custom meaningful labels", () => {
@@ -70,9 +71,22 @@ describe("MoonVisual public rendering contract", () => {
   });
 
   it("omits glow when disabled and at calendar size", () => {
-    expect(render({ phase: "Full Moon", illumination: 100, showGlow: false })).toContain('data-glow="false"');
+    const withoutGlow = render({ phase: "Full Moon", illumination: 100, showGlow: false });
+    expect(withoutGlow).toContain('data-glow="false"');
+    expect(withoutGlow).not.toContain('class="moon-orbit-dots"');
     expect(render({ phase: "Full Moon", illumination: 100, size: "xs", showGlow: true })).toContain('data-glow="false"');
-    expect(render({ phase: "Full Moon", illumination: 100 })).toContain('data-glow="true"');
+    const withGlow = render({ phase: "Full Moon", illumination: 100 });
+    expect(withGlow).toContain('data-glow="true"');
+    expect(withGlow).toContain('class="moon-orbit-dots"');
+    expect((withGlow.match(/r="3.8"/g) ?? [])).toHaveLength(3);
+  });
+
+  it("hides the orbit and dots while retaining the Moon halo", () => {
+    const html = render({ phase: "Full Moon", illumination: 100, size: "sm", showOrbit: false });
+    expect(html).toContain('data-glow="true"');
+    expect(html).toMatch(/<circle cx="50" cy="50" r="59" fill="url\(#moon-halo-/);
+    expect(html).not.toContain('r="56"');
+    expect(html).not.toContain('class="moon-orbit-dots"');
   });
 
   it("is deterministic and does not mutate input props", () => {

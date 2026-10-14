@@ -8,7 +8,6 @@ import { getMoonData } from "@/lib/astronomy/moon";
 import { dateToLocalDate, formatLocalDate } from "@/lib/dates/local-date";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { MoonVisual } from "@/components/moon/MoonVisual";
 import { LunarCalendar } from "@/components/calendar/LunarCalendar";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -151,9 +150,9 @@ export function HomeExperience() {
                   <div className="h-11 w-36 rounded-full bg-white/[0.08]" />
                 </div>
               </div>
-              <GlassCard className="flex min-h-[20rem] min-w-0 items-center justify-center p-8 lg:col-span-6">
+              <section className="flex min-h-[20rem] min-w-0 items-center justify-center p-8 lg:col-span-6">
                 <div className="aspect-square w-full max-w-sm rounded-full border border-border-subtle bg-surface" />
-              </GlassCard>
+              </section>
             </div>
           </Container>
           <ScrollCue />
@@ -194,9 +193,10 @@ export function HomeExperience() {
                 </ButtonLink>
               </div>
             </div>
-            <GlassCard data-luna-hero className="flex min-w-0 justify-center p-8 lg:col-span-6">
-              <MoonVisual moon={moon} />
-            </GlassCard>
+            <section data-luna-hero className="mx-auto flex aspect-square w-full max-w-[30rem] min-w-0 items-center justify-center lg:col-span-6">
+              {/* Fill the hero column; override the SVG's fixed width only here. */}
+              <MoonVisual moon={moon} surfaceImageSrc="/images/moon.png" className="w-full!" />
+            </section>
           </div>
         </Container>
         <ScrollCue />
@@ -204,7 +204,7 @@ export function HomeExperience() {
       {/* Hero section: end */}
 
       {/* Lunar calendar section: start */}
-      <section className="relative pt-12 pb-12 sm:pb-16 lg:pt-16 lg:pb-20">
+       <section className="relative pt-12 pb-12 sm:pb-16 lg:pt-16 lg:pb-20">
         <div aria-hidden="true" className="luna-calendar-background luna-section-shadow pointer-events-none absolute inset-0 bg-[url('/images/bg-calendar.png')] bg-cover bg-center">
           <div className="absolute inset-0 bg-background/30" />
         </div>
@@ -233,6 +233,37 @@ export function HomeExperience() {
         </div>
         <Container className="relative">
           <div data-luna-reveal className="grid grid-cols-1 gap-8 lg:grid-cols-[1.05fr_1.15fr] lg:items-center">
+            <div className="flex min-w-0 items-center justify-center">
+              <div className="relative mx-auto flex aspect-square w-full max-w-[31rem] items-center justify-center rounded-full border border-accent-light/40 bg-[radial-gradient(circle_at_center,_rgba(168,85,247,0.32),_rgba(15,23,42,0.2)_22%,_rgba(15,23,42,0.82)_100%)] shadow-[0_0_50px_rgba(168,85,247,0.35)]">
+                <svg aria-hidden="true" focusable="false" viewBox="0 0 100 100" className="pointer-events-none absolute inset-0 h-full w-full overflow-visible">
+                  <defs>
+                    <radialGradient id="today-moon-pink-dot">
+                      <stop stopColor="var(--luna-text-primary)" stopOpacity=".95" />
+                      <stop offset=".25" stopColor="var(--luna-accent-light)" stopOpacity=".45" />
+                      <stop offset="1" stopColor="var(--luna-accent-primary)" stopOpacity="0" />
+                    </radialGradient>
+                    <radialGradient id="today-moon-blue-dot">
+                      <stop stopColor="var(--luna-text-primary)" stopOpacity=".95" />
+                      <stop offset=".25" stopColor="var(--luna-accent-blue)" stopOpacity=".45" />
+                      <stop offset="1" stopColor="var(--luna-accent-blue)" stopOpacity="0" />
+                    </radialGradient>
+                  </defs>
+                  <g className="moon-orbit-dots">
+                    {/* Symmetric bounds keep the rotation centred on the outer border. */}
+                    <circle cx="50" cy="50" r="52" fill="transparent" />
+                    {[0, 120, 240].map((angle, index) => (
+                      <g key={angle} transform={`rotate(${angle} 50 50)`}>
+                        <circle cx="50" cy="0" r="2" fill={`url(#today-moon-${index === 0 ? "pink" : "blue"}-dot)`} />
+                        <circle cx="50" cy="0" r=".45" fill="var(--luna-text-primary)" />
+                      </g>
+                    ))}
+                  </g>
+                </svg>
+                <div className="flex h-[85%] w-[85%] items-center justify-center ">
+                  <MoonVisual decorative moon={moon} surfaceImageSrc="/images/moon.png" showGlow={false} size="xl" className="bg-[radial-gradient(circle_at_center,_rgba(168,85,247,0.82)_15%,_rgba(15,23,42,0.6)_82%,_rgba(15,23,42,0.82)_100%)] shadow-[0_0_80px_rgba(168,85,247,0.35)] rounded-full"/>
+                </div>
+              </div>
+            </div>
             <div className="max-w-xl">
               <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-light sm:text-sm">
                 Today&apos;s Moon
@@ -244,24 +275,24 @@ export function HomeExperience() {
                 The moon is {Math.round(moon.illuminationPercentage)}% illuminated today. Explore its changing light and nearby major phases.
               </p>
 
-              <GlassCard className="mt-6 max-w-xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_0_30px_rgba(139,92,246,0.12)] backdrop-blur-md sm:p-5">
+              <section className="mt-6 max-w-xl border border-white/10 bg-white/[0.04] rounded-2xl p-4 shadow-[0_0_30px_rgba(139,92,246,0.12)] backdrop-blur-md sm:p-5">
                 <dl className="space-y-3">
-                  <div className="flex items-center justify-between gap-4 rounded-xl border border-border-subtle bg-white/[0.04] p-3">
+                  <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.04] p-3">
                     <dt className="text-sm text-text-secondary">Illumination</dt>
                     <dd className="text-base font-semibold text-text-primary">{Math.round(moon.illuminationPercentage)}%</dd>
                   </div>
-                  <div className="flex items-center justify-between gap-4 rounded-xl border border-border-subtle bg-white/[0.04] p-3">
+                  <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.04] p-3">
                     <dt className="text-sm text-text-secondary">Age</dt>
                     <dd className="text-base font-semibold text-text-primary">{moon.moonAgeDays.toFixed(1)}d</dd>
                   </div>
-                  <div className="flex items-center justify-between gap-4 rounded-xl border border-border-subtle bg-white/[0.04] p-3">
+                  <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.04] p-3">
                     <dt className="text-sm text-text-secondary">Previous</dt>
                     <dd className="min-w-0 text-right text-base font-semibold text-text-primary">
                       {moon.previousMajorPhase.name}
                       <span className="mt-1 block text-xs font-normal text-text-secondary">{previousPhaseDateLabel}</span>
                     </dd>
                   </div>
-                  <div className="flex items-center justify-between gap-4 rounded-xl border border-border-subtle bg-white/[0.04] p-3">
+                  <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.04] p-3">
                     <dt className="text-sm text-text-secondary">Next</dt>
                     <dd className="min-w-0 text-right text-base font-semibold text-text-primary">
                       {moon.nextMajorPhase.name}
@@ -269,19 +300,10 @@ export function HomeExperience() {
                     </dd>
                   </div>
                 </dl>
-              </GlassCard>
+              </section>
             </div>
 
-            <div className="flex items-center justify-center">
-              <div className="relative flex aspect-square w-full max-w-[32rem] items-center justify-center overflow-hidden rounded-full border border-accent-light/40 bg-[radial-gradient(circle_at_center,_rgba(168,85,247,0.32),_rgba(15,23,42,0.2)_52%,_rgba(15,23,42,0.82)_100%)] shadow-[0_0_50px_rgba(168,85,247,0.35)]">
-                <div className="absolute inset-[10%] rounded-full border border-accent-light/50" aria-hidden="true" />
-                <div className="absolute inset-[18%] rounded-full border border-accent-light/20" aria-hidden="true" />
-                <div className="absolute h-4 w-4 rounded-full bg-accent-light shadow-[0_0_18px_rgba(167,139,250,0.9)]" aria-hidden="true" />
-                <div className="flex h-[68%] w-[68%] items-center justify-center rounded-full border border-white/10 bg-surface">
-                  <MoonVisual decorative moon={moon} showGlow={false} size="xl" />
-                </div>
-              </div>
-            </div>
+
           </div>
         </Container>
       </section>
@@ -310,7 +332,7 @@ export function HomeExperience() {
 
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {whyLunaFeatures.map((feature) => (
-                <GlassCard key={feature.title} as="div" className="flex min-h-[11.5rem] flex-col items-center justify-center border border-accent-light/25 bg-[rgba(15,23,42,0.32)] p-5 text-center shadow-[0_0_35px_rgba(139,92,246,0.12)]">
+                <div key={feature.title} className="flex min-h-[11.5rem] flex-col items-center justify-center border border-accent-light/25 bg-[rgba(15,23,42,0.32)] p-5 text-center shadow-[0_0_35px_rgba(139,92,246,0.12)]">
                   <div className="mb-4 flex h-8 w-8 items-center justify-center  bg-transparent text-accent-light">
                     <WhyLunaIcon type={feature.type} />
                   </div>
@@ -322,7 +344,7 @@ export function HomeExperience() {
                       <span key={line} className="block">{line}</span>
                     ))}
                   </p>
-                </GlassCard>
+                </div>
               ))}
             </div>
           </div>

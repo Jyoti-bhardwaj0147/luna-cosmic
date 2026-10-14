@@ -50,10 +50,12 @@ export function SelectedDateDetails({ date, moon }: SelectedDateDetailsProps) {
           </time>
           <MoonVisual
             className="mt-5"
+            surfaceImageSrc="/images/moon.png"
             decorative
             illumination={moon.illuminationPercentage}
             phase={moon.phaseName}
             size="md"
+            showOrbit={false}
           />
           <h3 className="mt-4 font-display text-3xl font-semibold leading-tight text-text-primary" id={headingId}>
             {moon.phaseName}

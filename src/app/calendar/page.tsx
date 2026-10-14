@@ -15,7 +15,7 @@ export default function CalendarPage() {
             description="Select a date to update phase, illumination, age, and surrounding major phases."
           />
         </div>
-        <LunarCalendar />
+        <LunarCalendar  />
       </Container>
     </main>
   );

@@ -3,7 +3,6 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MOON_PHASE_NAMES } from "@/constants/phases";
 import { MoonVisual } from "@/components/moon/MoonVisual";
-import { ButtonLink } from "@/components/ui/Button";
 import type { MoonPhaseName } from "@/types/moon";
 
 const phaseGuide: Record<MoonPhaseName, { illumination: number; description: string }> = {
@@ -25,14 +24,14 @@ export default function PhasesPage() {
           eyebrow="Phases"
           level="h1"
           title="Moon phase guide"
-          description="Follow the eight phases in order, from New Moon to Waning Crescent. A complete cycle takes about 29.5 days."
+          description="8 phases in order, from New Moon to Waning Crescent. A complete cycle takes about 29.5 days."
         />
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {MOON_PHASE_NAMES.map((phase) => (
             <GlassCard as="article" className="min-w-0 p-5" key={phase}>
-              <MoonVisual phase={phase} illumination={phaseGuide[phase].illumination} size="sm" decorative className="mb-4" />
+              <MoonVisual phase={phase} illumination={phaseGuide[phase].illumination} size="sm" decorative showOrbit={false} className="mb-4" />
               <h2 className="text-lg font-semibold text-foreground">{phase}</h2>
-              <p className="mt-3 text-sm leading-7 text-muted">{phaseGuide[phase].description}</p>
+              <p className="mt-3 text-sm leading- tracking-wide text-muted">{phaseGuide[phase].description}</p>
             </GlassCard>
           ))}
         </div>
@@ -42,9 +41,7 @@ export default function PhasesPage() {
           convention: waxing on the right and waning on the left. Your view may be rotated
           or reversed depending on where you observe. Actual illumination varies with the date.
         </p>
-        <div className="mt-6">
-          <ButtonLink href="/calendar" variant="secondary">Explore the lunar calendar</ButtonLink>
-        </div>
+        
       </Container>
     </main>
   );
