@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
+import { PageLoader } from "@/components/layout/PageLoader";
 import "./globals.css";
 
 const inter = localFont({
@@ -42,7 +43,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${inter.variable} ${cormorantGaramond.variable} h-full antialiased`}
     >
       <body>
-        <div className="cosmic-shell">
+        <PageLoader />
+        <noscript><style>{`.luna-page-loader { display: none; }`}</style></noscript>
+        <div className="cosmic-shell" id="luna-page-content">
           <Navbar />
           {children}
           <Footer />

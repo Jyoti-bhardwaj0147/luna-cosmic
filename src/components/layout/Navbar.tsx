@@ -6,7 +6,7 @@ import Image from "next/image";
 
 export function Navbar() {
   return (
-    <header className="fixed inset-x-0 top-0 z-[999] border-b border-white/10 bg-background/70 backdrop-blur-sm">
+    <header className="fixed inset-x-0 top-0 z-[999]  bg-background/60 shadow-[var(--shadow-soft)] backdrop-blur-sm transition-shadow duration-300">
       <Container>
         <nav className="flex min-h-16 flex-col items-start justify-between gap-3 py-3 sm:flex-row sm:items-center" aria-label="Primary navigation">
           <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
@@ -20,7 +20,7 @@ export function Navbar() {
             <ButtonLink href="/" variant="ghost">Home</ButtonLink>
             <ButtonLink href="/calendar" variant="ghost">Calendar</ButtonLink>
             <ButtonLink href="/phases" variant="ghost">Phases</ButtonLink>
-            <ButtonLink href="/about" variant="secondary">About</ButtonLink>
+            {/* <ButtonLink href="/about" variant="secondary">About</ButtonLink> */}
           </div>
         </nav>
       </Container>

@@ -5,7 +5,7 @@ import { Container } from "@/components/ui/Container";
 
 export function Footer() {
   return (
-    <footer className="mt-auto  bg-background/80 text-sm text-muted">
+    <footer className="mt-auto bg-background/80 text-sm text-muted shadow-[var(--shadow-soft)] backdrop-blur-sm transition-shadow duration-300">
       <Container>
         <div className="flex flex-col gap-4 border-b border-white/10 py-4 sm:py-1 sm:flex-row sm:items-center sm:justify-between">
           <Link href="/" className="inline-flex w-fit items-center">
@@ -15,7 +15,7 @@ export function Footer() {
             <Link href="/" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">Home</Link>
             <Link href="/calendar" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">Calendar</Link>
             <Link href="/phases" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">Phases</Link>
-            <Link href="/about" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">About</Link>
+            {/* <Link href="/about" className="inline-flex min-h-11 items-center transition-colors hover:text-foreground">About</Link> */}
           </nav>
         </div>
         <div className="flex flex-col gap-2 py-4 text-xs sm:flex-row sm:items-center sm:justify-between">

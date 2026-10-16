@@ -178,8 +178,8 @@ export function HomeExperience() {
               <p className="text-sm font-semibold uppercase text-cyan">
                 The Moon, Every Day
               </p>
-              <h1 data-luna-hero className="mt-4 max-w-3xl text-4xl font-display font-semibold leading-tight text-foreground sm:text-5xl lg:text-6xl">
-                Discover the Rhythm of the Moon
+              <h1 data-luna-hero className="mt-4 max-w-3xl text-4xl font-display font-semibold leading-[0.9] text-foreground sm:text-7xl lg:text-6xl">
+                Discover the Rhythm of <span className="bg-linear-to-r from-text-primary to-accent-light bg-clip-text text-transparent">the Moon</span>
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-7 text-muted sm:text-lg">
                 Track today&apos;s lunar phase, illumination, age, and nearby major phases with local calculations.
@@ -217,8 +217,8 @@ export function HomeExperience() {
           />
         </div>
           <div data-luna-reveal className="grid grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
-            <div className="col-span-12">
-              <LunarCalendar initialDate={today} showSelectedDateDetails={false} showTwoWeeks />
+            <div className="col-span-12 [&_header>button]:invisible">
+              <LunarCalendar initialDate={today} showSelectedDateDetails={false} showTwoWeeks  />
             </div>
           </div>
         </Container>
@@ -227,10 +227,11 @@ export function HomeExperience() {
 
 
       {/* Today's Moon section: start */}
-      <section className="relative pt-12 pb-12 sm:pb-16 lg:pt-16 lg:pb-20">
+      <section className="luna-journey-today relative pt-12 pb-12 sm:pb-16 lg:pt-16 lg:pb-20">
         <div aria-hidden="true" className="luna-today-background luna-section-shadow pointer-events-none absolute inset-0 bg-[url('/images/bg-today-moon.png')] bg-cover bg-center">
           <div className="absolute inset-0 bg-background/30" />
         </div>
+        
         <Container className="relative">
           <div data-luna-reveal className="grid grid-cols-1 gap-8 lg:grid-cols-[1.05fr_1.15fr] lg:items-center">
             <div className="flex min-w-0 items-center justify-center">
@@ -310,7 +311,7 @@ export function HomeExperience() {
       {/* Today's Moon section: end */}
 
       {/* Why Luna section: start */}
-      <section className="pt-12 pb-12 sm:pb-16 lg:pt-16 lg:pb-20">
+      <section className="pt-12 pb-12 hidden sm:pb-16 lg:pt-16 lg:pb-20">
         <Container>
           <div data-luna-reveal className="grid gap-6 lg:grid-cols-[0.96fr_1.34fr] lg:items-start">
             <div className="max-w-xl">
@@ -354,9 +355,9 @@ export function HomeExperience() {
 
 
       {/* Lunar journey CTA section: start */}
-      <section className="luna-journey-cta relative isolate overflow-hidden py-10 text-center sm:py-12 lg:py-16">
+      <section className="luna-journey-cta hidden relative isolate overflow-hidden py-10 text-center sm:py-12 lg:py-16">
         <div aria-hidden="true" className="luna-journey-background luna-section-shadow pointer-events-none absolute inset-0 bg-[url('/images/bg-lunar-journey.png')] bg-cover bg-center">
-          <div className="absolute inset-0 bg-background/65" />
+          <div className="absolute inset-0 bg-background/30" />
         </div>
         <Container className="relative">
           <div data-luna-reveal className="mx-auto flex max-w-2xl flex-col items-center">
