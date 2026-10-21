@@ -2,10 +2,18 @@ import { Container } from "@/components/ui/Container";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ButtonLink } from "@/components/ui/Button";
+import type { Metadata } from "next";
+import { siteUrl } from "../site-url";
+
+export const metadata: Metadata = {
+  title: "About",
+  description: "Learn how Luna calculates daily Moon details locally, how to use its calendar, and what its estimates include.",
+  ...(siteUrl ? { alternates: { canonical: "/about" } } : {}),
+};
 
 export default function AboutPage() {
   return (
-    <main className="py-10 sm:py-14">
+    <main id="main-content" className="py-10 sm:py-14">
       <Container>
         <SectionHeading
           eyebrow="About"

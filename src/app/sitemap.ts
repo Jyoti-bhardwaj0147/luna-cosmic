@@ -2,13 +2,13 @@ import type { MetadataRoute } from "next";
 
 export const dynamic = "force-static";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+import { siteUrl } from "./site-url";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  if (!siteUrl) return [];
   return ["", "/calendar", "/phases", "/about"].map((path) => ({
     url: `${siteUrl}${path}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly",
+    changeFrequency: "weekly",
     priority: path === "" ? 1 : 0.7,
   }));
 }

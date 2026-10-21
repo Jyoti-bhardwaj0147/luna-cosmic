@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
 import { PageLoader } from "@/components/layout/PageLoader";
+import { siteUrl } from "./site-url";
 import "./globals.css";
 
 const inter = localFont({
@@ -19,10 +20,8 @@ const cormorantGaramond = localFont({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
+  ...(siteUrl ? { metadataBase: new URL(siteUrl) } : {}),
   title: {
     default: "Luna Cosmic",
     template: "%s | Luna Cosmic",
@@ -33,6 +32,7 @@ export const metadata: Metadata = {
     title: "Luna Cosmic",
     description: "Explore lunar phases with local calendar-date calculations.",
     type: "website",
+    siteName: "Luna Cosmic",
   },
 };
 
@@ -43,6 +43,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${inter.variable} ${cormorantGaramond.variable} h-full antialiased`}
     >
       <body>
+        {siteUrl && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "WebSite", name: "Luna Cosmic", url: siteUrl, description: "A local lunar calendar for Moon phase, illumination, age, and nearby major phases." }).replace(/</g, "\\u003c") }} />}
+        <a className="skip-link" href="#main-content">Skip to main content</a>
         <PageLoader />
         <noscript><style>{`.luna-page-loader { display: none; }`}</style></noscript>
         <div className="cosmic-shell" id="luna-page-content">

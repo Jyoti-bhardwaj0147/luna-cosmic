@@ -11,7 +11,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   }, [error]);
 
   return (
-    <main className="flex flex-1 items-center py-16">
+    <main id="main-content" className="flex flex-1 items-center py-16">
       <Container>
         <GlassCard className="mx-auto max-w-xl p-8 text-center">
           <p className="text-sm font-semibold uppercase text-rose">Error</p>

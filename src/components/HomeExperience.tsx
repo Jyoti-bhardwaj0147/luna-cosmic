@@ -131,7 +131,7 @@ export function HomeExperience() {
 
   if (localDay === null || !today || !moon) {
     return (
-      <main className="luna-home flex-1">
+      <main id="main-content" className="luna-home flex-1">
         {/* Loading hero section: start */}
         <section className="luna-home-hero relative py-10 sm:py-14 lg:py-20">
           <div aria-hidden="true" className="luna-hero-background pointer-events-none absolute inset-0 bg-[url('/images/bg-hero.png')] bg-cover bg-center">
@@ -141,13 +141,11 @@ export function HomeExperience() {
             <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
               <div className="min-w-0 lg:col-span-6">
                 <p className="text-sm font-semibold uppercase text-cyan">Your local calendar date</p>
-                <div className="mt-4 h-10 w-52 rounded-md bg-white/[0.08]" />
-                <div className="mt-4 h-12 w-full max-w-72 rounded-md bg-white/[0.08]" />
-                <div className="mt-5 h-5 w-full max-w-xl rounded-md bg-white/[0.08]" />
-                <div className="mt-3 h-5 w-4/5 max-w-lg rounded-md bg-white/[0.08]" />
+                <h1 className="mt-4 max-w-3xl text-4xl font-display font-semibold leading-[0.9] text-foreground sm:text-7xl lg:text-6xl">Discover the Rhythm of <span className="bg-linear-to-r from-text-primary to-accent-light bg-clip-text text-transparent">the Moon</span></h1>
+                <p className="mt-5 max-w-2xl text-base leading-7 text-muted sm:text-lg">Track today&apos;s lunar phase, illumination, age, and nearby major phases with local calculations.</p>
                 <div className="mt-7 flex flex-wrap gap-3">
-                  <div className="h-11 w-36 rounded-full bg-white/[0.08]" />
-                  <div className="h-11 w-36 rounded-full bg-white/[0.08]" />
+                  <ButtonLink href="/calendar">Open calendar <ArrowRight aria-hidden="true" size={18} /></ButtonLink>
+                  <ButtonLink href="/phases" variant="secondary">View phases</ButtonLink>
                 </div>
               </div>
               <section className="flex min-h-[20rem] min-w-0 items-center justify-center p-8 lg:col-span-6">
@@ -166,7 +164,7 @@ export function HomeExperience() {
   const nextPhaseDateLabel = formatLocalDate(moon.nextMajorPhase.date, phaseDateOptions);
 
   return (
-    <main ref={mainRef} className="luna-home flex-1">
+    <main id="main-content" ref={mainRef} className="luna-home flex-1">
       {/* Hero section: start */}
       <section className="luna-home-hero relative py-10 sm:py-14 lg:py-20">
         <div aria-hidden="true" className="luna-hero-background pointer-events-none absolute inset-0 bg-[url('/images/bg-hero.png')] bg-cover bg-center">

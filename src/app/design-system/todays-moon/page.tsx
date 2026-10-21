@@ -8,7 +8,7 @@ export default function TodayMoonPreview() {
   if (process.env.NODE_ENV !== "development") notFound();
 
   return (
-    <main className="py-12">
+    <main id="main-content" className="py-12">
       <Container className="space-y-10">
         <header className="space-y-3">
           <p className="text-sm text-accent-light">Development design-system preview</p>

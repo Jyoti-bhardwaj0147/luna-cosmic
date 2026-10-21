@@ -4,6 +4,14 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { MOON_PHASE_NAMES } from "@/constants/phases";
 import { MoonVisual } from "@/components/moon/MoonVisual";
 import type { MoonPhaseName } from "@/types/moon";
+import type { Metadata } from "next";
+import { siteUrl } from "../site-url";
+
+export const metadata: Metadata = {
+  title: "Moon Phase Guide",
+  description: "Learn the eight Moon phases in order, from New Moon through waxing and waning phases, with representative illustrations.",
+  ...(siteUrl ? { alternates: { canonical: "/phases" } } : {}),
+};
 
 const phaseGuide: Record<MoonPhaseName, { illumination: number; description: string }> = {
   "New Moon": { illumination: 0, description: "The side facing Earth is almost entirely dark. This marks the start of a new lunar cycle." },
@@ -18,7 +26,7 @@ const phaseGuide: Record<MoonPhaseName, { illumination: number; description: str
 
 export default function PhasesPage() {
   return (
-    <main className="py-10 sm:py-14">
+    <main id="main-content" className="py-10 sm:py-14">
       <Container>
         <SectionHeading
           eyebrow="Phases"

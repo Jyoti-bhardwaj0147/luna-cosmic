@@ -94,6 +94,23 @@ a {
   text-underline-offset: 0.2em;
 }
 
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 10000;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: var(--luna-surface-strong);
+  color: var(--luna-text-primary);
+  transform: translateY(-200%);
+  transition: transform 180ms ease;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
 button {
   color: inherit;
 }

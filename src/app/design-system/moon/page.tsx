@@ -16,7 +16,7 @@ export default function MoonVisualPreview() {
   if (process.env.NODE_ENV !== "development") notFound();
 
   return (
-    <main className="py-12" style={{ background: "var(--luna-background)", color: "var(--luna-text-primary)" }}>
+    <main id="main-content" className="py-12" style={{ background: "var(--luna-background)", color: "var(--luna-text-primary)" }}>
       <Container className="space-y-12">
         <header className="space-y-3">
           <p className="text-sm text-accent-light">Development design-system preview</p>
