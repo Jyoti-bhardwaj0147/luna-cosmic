@@ -11,6 +11,7 @@ const inter = localFont({
   variable: "--font-inter",
   weight: "100 900",
   display: "swap",
+  preload: false,
 });
 
 const cormorantGaramond = localFont({
