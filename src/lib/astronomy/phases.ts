@@ -74,6 +74,16 @@ export function getNextMajorPhase(date: LocalDate): MoonMajorPhase {
   return moonMajorPhaseFromQuarter(nextQuarter.quarter, nextQuarter.time.date);
 }
 
+/** Calendar days to the next full moon, including a full moon on this date. */
+export function getDaysUntilFullMoon(date: LocalDate): number {
+  const start = dateToCalculationInstant(date);
+  start.setUTCHours(0, 0, 0, 0);
+  let quarter = SearchMoonQuarter(start);
+  while (quarter.quarter !== 2) quarter = NextMoonQuarter(quarter);
+  const fullMoonDay = localDateToUtcNoon(utcInstantToLocalDate(quarter.time.date));
+  return Math.round((fullMoonDay.getTime() - localDateToUtcNoon(date).getTime()) / MS_PER_DAY);
+}
+
 export function getMoonPhaseName(phaseFraction: number): MoonPhaseName {
   const normalizedFraction = positiveModulo(phaseFraction, 1);
 

@@ -26,8 +26,9 @@ const phaseGuide: Record<MoonPhaseName, { illumination: number; description: str
 
 export default function PhasesPage() {
   return (
-    <main id="main-content" className="py-10 sm:py-14">
-      <Container>
+    <main id="main-content" className="relative isolate overflow-hidden py-10 sm:py-14">
+      <div aria-hidden="true" className="luna-phases-aurora pointer-events-none absolute inset-0" />
+      <Container className="relative z-[1]">
         <SectionHeading
           eyebrow="Phases"
           level="h1"

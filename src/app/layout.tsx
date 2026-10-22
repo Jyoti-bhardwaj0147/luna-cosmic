@@ -5,6 +5,10 @@ import { Navbar } from "@/components/layout/Navbar";
 import { PageLoader } from "@/components/layout/PageLoader";
 import { siteUrl } from "./site-url";
 import "./globals.css";
+import { Geist } from "next/font/google";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = localFont({
   src: "./fonts/Inter-VariableFont_opsz,wght.ttf",
@@ -41,7 +45,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${cormorantGaramond.variable} h-full antialiased`}
+      className={cn("h-full", "antialiased", inter.variable, cormorantGaramond.variable, "font-sans", geist.variable)}
     >
       <body>
         {siteUrl && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "WebSite", name: "Luna Cosmic", url: siteUrl, description: "A local lunar calendar for Moon phase, illumination, age, and nearby major phases." }).replace(/</g, "\\u003c") }} />}

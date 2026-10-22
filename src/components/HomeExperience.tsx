@@ -3,8 +3,10 @@
 import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useReducedMotion } from "motion/react";
 import { ArrowRight, CalendarDays, ChevronDown, Leaf, MapPin, MonitorSmartphone, MoonStar, Mouse, Sparkles } from "lucide-react";
 import { getMoonData } from "@/lib/astronomy/moon";
+import { getDaysUntilFullMoon } from "@/lib/astronomy/phases";
 import { dateToLocalDate, formatLocalDate } from "@/lib/dates/local-date";
 import { ButtonLink } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -13,7 +15,14 @@ import { LunarCalendar } from "@/components/calendar/LunarCalendar";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 
 const phaseDateOptions = { month: "short", day: "numeric", year: "numeric" } as const;
-const subscribe = () => () => {};
+const subscribe = (onChange: () => void) => {
+  const timer = window.setInterval(onChange, 60_000);
+  window.addEventListener("focus", onChange);
+  return () => {
+    window.clearInterval(timer);
+    window.removeEventListener("focus", onChange);
+  };
+};
 const getServerSnapshot = () => null;
 const getLocalDaySnapshot = () => {
   const date = new Date();
@@ -93,9 +102,11 @@ const whyLunaFeatures = [
 
 export function HomeExperience() {
   const mainRef = useRef<HTMLElement>(null);
+  const reduceMotion = useReducedMotion();
   const localDay = useSyncExternalStore(subscribe, getLocalDaySnapshot, getServerSnapshot);
   const today = useMemo(() => localDay === null ? null : dateToLocalDate(new Date(localDay)), [localDay]);
   const moon = useMemo(() => today === null ? null : getMoonData(today), [today]);
+  const daysUntilFullMoon = useMemo(() => today === null ? null : getDaysUntilFullMoon(today), [today]);
 
   useEffect(() => {
     const main = mainRef.current;
@@ -141,10 +152,17 @@ export function HomeExperience() {
             <div className="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
               <div className="min-w-0 lg:col-span-6">
                 <p className="text-sm font-semibold uppercase text-cyan">Your local calendar date</p>
-                <h1 className="mt-4 max-w-3xl text-4xl font-display font-semibold leading-[0.9] text-foreground sm:text-7xl lg:text-6xl">Discover the Rhythm of <span className="bg-linear-to-r from-text-primary to-accent-light bg-clip-text text-transparent">the Moon</span></h1>
+                <h1 className="mt-4 max-w-3xl text-4xl font-display font-semibold leading-[0.9] text-foreground sm:text-7xl lg:text-8xl">Discover the Rhythm of <span className="bg-linear-to-r from-accent-pink via-accent-blue to-accent-light bg-clip-text text-transparent">the Moon</span></h1>
                 <p className="mt-5 max-w-2xl text-base leading-7 text-muted sm:text-lg">Track today&apos;s lunar phase, illumination, age, and nearby major phases with local calculations.</p>
                 <div className="mt-7 flex flex-wrap gap-3">
-                  <ButtonLink href="/calendar">Open calendar <ArrowRight aria-hidden="true" size={18} /></ButtonLink>
+                  <ButtonLink href="/calendar" className="group">
+                    Open calendar
+                    <ArrowRight
+                      aria-hidden="true"
+                      size={18}
+                      className="motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:translate-x-1 motion-safe:group-focus-visible:translate-x-1"
+                    />
+                  </ButtonLink>
                   <ButtonLink href="/phases" variant="secondary">View phases</ButtonLink>
                 </div>
               </div>
@@ -176,15 +194,44 @@ export function HomeExperience() {
               <p className="text-sm font-semibold uppercase text-cyan">
                 The Moon, Every Day
               </p>
-              <h1 data-luna-hero className="mt-4 max-w-3xl text-4xl font-display font-semibold leading-[0.9] text-foreground sm:text-7xl lg:text-6xl">
-                Discover the Rhythm of <span className="bg-linear-to-r from-text-primary to-accent-light bg-clip-text text-transparent">the Moon</span>
+              <h1 data-luna-hero className="mt-4 max-w-3xl text-5xl font-display font-semibold leading-[0.9] text-foreground sm:text-6xl lg:text-7xl">
+                Discover the rhythm of <span className="bg-linear-to-r from-accent-blue via-accent-pink to-accent-light bg-clip-text text-transparent">the Moon</span>
               </h1>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-muted sm:text-lg">
+              <p className="mt-5 max-w-2xl text-sm leading-6 text-muted sm:text-base" data-luna-hero>
                 Track today&apos;s lunar phase, illumination, age, and nearby major phases with local calculations.
               </p>
+              <div data-luna-hero className="mt-6 max-w-sm text-text-primary">
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+                  <time dateTime={`${today.year}-${String(today.month).padStart(2, "0")}-${String(today.day).padStart(2, "0")}`} className="text-sm sm:text-base font-medium">
+                    {formatLocalDate(today, phaseDateOptions)}
+                  </time>
+                  <span className="group inline-flex items-center gap-2 rounded-full border border-accent-light/20 bg-accent-primary/35 px-3 py-1 font-medium text-sm  sm:text-base">
+                    <MoonStar aria-hidden="true" size={14} className=" motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-12" />
+                    {moon.phaseName}
+                  </span>
+                </div>
+                <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-3">
+                  <p className="pr-6 border-r border-border-subtle">
+                    <span className="block text-3xl leading-none tabular-nums">{Math.round(moon.illuminationPercentage)}%</span>
+                    <span className="mt-1 block text-sm  sm:text-base text-text-secondary">illuminated</span>
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <MoonVisual decorative moon={moon} size="xs" showGlow={false} />
+                    <p className="text-sm sm:text-base leading-5">
+                      <span className="block font-semibold tabular-nums">{daysUntilFullMoon} {daysUntilFullMoon === 1 ? "day" : "days"}</span>
+                      <span className="mt-1 block text-text-secondary">until Full Moon</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
               <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-                <ButtonLink href="/calendar">
-                  Open calendar <ArrowRight aria-hidden="true" size={18} />
+                <ButtonLink href="/calendar" className="group">
+                  Open calendar
+                  <ArrowRight
+                    aria-hidden="true"
+                    size={18}
+                    className="motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:translate-x-1 motion-safe:group-focus-visible:translate-x-1"
+                  />
                 </ButtonLink>
                 <ButtonLink href="/phases" variant="secondary">
                   View phases
@@ -202,21 +249,21 @@ export function HomeExperience() {
       {/* Hero section: end */}
 
       {/* Lunar calendar section: start */}
-       <section className="relative pt-12 pb-12 sm:pb-16 lg:pt-16 lg:pb-20">
+      <section className="relative pt-12 pb-12 sm:pb-16 lg:pt-16 lg:pb-20">
         <div aria-hidden="true" className="luna-calendar-background luna-section-shadow pointer-events-none absolute inset-0 bg-[url('/images/bg-calendar.png')] bg-cover bg-center">
           <div className="absolute inset-0 bg-background/30" />
         </div>
         <Container className="relative">
           <div className="relative z-[1] mb-8">
-          <SectionHeading
-            eyebrow="Lunar Calendar"
-            title="Explore the Moon's Journey"
-            description="Explore lunar phases for this week and next. Select a date to highlight it."
-          />
-        </div>
+            <SectionHeading
+              eyebrow="Lunar Calendar"
+              title="Explore the Moon's Journey"
+              description="Explore lunar phases for this week and next. Select a date to highlight it."
+            />
+          </div>
           <div data-luna-reveal className="grid grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
             <div className="col-span-12 [&_header>button]:invisible">
-              <LunarCalendar initialDate={today} showSelectedDateDetails={false} showTwoWeeks  />
+              <LunarCalendar initialDate={today} showSelectedDateDetails={false} showTwoWeeks />
             </div>
           </div>
         </Container>
@@ -226,10 +273,8 @@ export function HomeExperience() {
 
       {/* Today's Moon section: start */}
       <section className="luna-journey-today relative pt-12 pb-12 sm:pb-16 lg:pt-16 lg:pb-20">
-        <div aria-hidden="true" className="luna-today-background luna-section-shadow pointer-events-none absolute inset-0 bg-[url('/images/bg-today-moon.png')] bg-cover bg-center">
-          <div className="absolute inset-0 bg-background/30" />
-        </div>
-        
+
+
         <Container className="relative">
           <div data-luna-reveal className="grid grid-cols-1 gap-8 lg:grid-cols-[1.05fr_1.15fr] lg:items-center">
             <div className="flex min-w-0 items-center justify-center">
@@ -259,39 +304,44 @@ export function HomeExperience() {
                   </g>
                 </svg>
                 <div className="flex h-[85%] w-[85%] items-center justify-center ">
-                  <MoonVisual decorative moon={moon} surfaceImageSrc="/images/moon.png" showGlow={false} size="xl" className="bg-[radial-gradient(circle_at_center,_rgba(168,85,247,0.82)_15%,_rgba(15,23,42,0.6)_82%,_rgba(15,23,42,0.82)_100%)] shadow-[0_0_80px_rgba(168,85,247,0.35)] rounded-full"/>
+                  <MoonVisual decorative moon={moon} surfaceImageSrc="/images/moon.png" showGlow={false} size="xl" className="bg-[radial-gradient(circle_at_center,_rgba(168,85,247,0.82)_15%,_rgba(15,23,42,0.6)_82%,_rgba(15,23,42,0.82)_100%)] shadow-[0_0_80px_rgba(168,85,247,0.35)] rounded-full" />
                 </div>
               </div>
             </div>
-            <div className="max-w-xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-light sm:text-sm">
+            <div className="max-w-xl md:max-w-none lg:max-w-xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-light mb-3">
                 Today&apos;s Moon
               </p>
-              <h2 className="mt-4 font-display text-4xl font-semibold leading-none tracking-[-0.04em] text-foreground sm:text-5xl lg:text-6xl">
+              <h2 className="font-display text-[clamp(2rem,5vw,3.5rem)] font-semibold leading-[1.02] tracking-[-0.025em] text-text-primary">
                 {moon.phaseName}
               </h2>
-              <p className="mt-5 max-w-lg text-base leading-7 text-text-secondary sm:text-lg">
+              <p className="mt-4 max-w-[65ch] text-sm leading-5 sm:leading-7 text-text-secondary sm:text-base">
                 The moon is {Math.round(moon.illuminationPercentage)}% illuminated today. Explore its changing light and nearby major phases.
               </p>
 
-              <section className="mt-6 max-w-xl border border-white/10 bg-white/[0.04] rounded-2xl p-4 shadow-[0_0_30px_rgba(139,92,246,0.12)] backdrop-blur-md sm:p-5">
-                <dl className="space-y-3">
-                  <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.04] p-3">
+            
+
+              <section className="mt-6 max-w-xl border border-white/10 bg-white/[0.04] rounded-2xl p-4 shadow-[0_0_30px_rgba(139,92,246,0.12)] backdrop-blur-md sm:p-5 md:max-w-none lg:max-w-xl">
+                <div aria-hidden="true" className="luna-today-background  pointer-events-none absolute inset-1 bg-[url('/images/bg-today-moon.png')] bg-cover bg-center">
+                  <div className="absolute inset-1 bg-background/30" />
+                </div>
+                <dl className="space-y-3 z-10 relative ">
+                  <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-md">
                     <dt className="text-sm text-text-secondary">Illumination</dt>
                     <dd className="text-base font-semibold text-text-primary">{Math.round(moon.illuminationPercentage)}%</dd>
                   </div>
-                  <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                  <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-md">
                     <dt className="text-sm text-text-secondary">Age</dt>
                     <dd className="text-base font-semibold text-text-primary">{moon.moonAgeDays.toFixed(1)}d</dd>
                   </div>
-                  <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                  <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-md">
                     <dt className="text-sm text-text-secondary">Previous</dt>
                     <dd className="min-w-0 text-right text-base font-semibold text-text-primary">
                       {moon.previousMajorPhase.name}
                       <span className="mt-1 block text-xs font-normal text-text-secondary">{previousPhaseDateLabel}</span>
                     </dd>
                   </div>
-                  <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.04] p-3">
+                  <div className="flex items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-md">
                     <dt className="text-sm text-text-secondary">Next</dt>
                     <dd className="min-w-0 text-right text-base font-semibold text-text-primary">
                       {moon.nextMajorPhase.name}
@@ -307,73 +357,6 @@ export function HomeExperience() {
         </Container>
       </section>
       {/* Today's Moon section: end */}
-
-      {/* Why Luna section: start */}
-      <section className="pt-12 pb-12 hidden sm:pb-16 lg:pt-16 lg:pb-20">
-        <Container>
-          <div data-luna-reveal className="grid gap-6 lg:grid-cols-[0.96fr_1.34fr] lg:items-start">
-            <div className="max-w-xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-light sm:text-sm">WHY LUNA?</p>
-              <h2 className="mt-4 font-display text-4xl font-semibold leading-[0.9] tracking-[-0.05em] text-foreground sm:text-5xl lg:text-6xl">
-                More Than Just
-                <span className="block">a Calendar</span>
-              </h2>
-              <p className="mt-6 max-w-[22rem] text-lg leading-8 text-text-secondary sm:text-[1.05rem]">
-                Luna helps you understand the moon&apos;s
-                <span className="block">influence, plan your life, and find beauty</span>
-                <span className="block">in every phase.</span>
-              </p>
-              <ButtonLink href="/about" className="mt-8 w-auto rounded-full bg-[linear-gradient(110deg,var(--color-accent-primary),var(--color-accent-pink))] px-6 py-3 text-base text-text-primary shadow-[var(--shadow-accent)] hover:brightness-110">
-                <span className="font-semibold">Learn More</span>
-                <ArrowRight aria-hidden="true" size={18} />
-              </ButtonLink>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {whyLunaFeatures.map((feature) => (
-                <div key={feature.title} className="flex min-h-[11.5rem] flex-col items-center justify-center border border-accent-light/25 bg-[rgba(15,23,42,0.32)] p-5 text-center shadow-[0_0_35px_rgba(139,92,246,0.12)]">
-                  <div className="mb-4 flex h-8 w-8 items-center justify-center  bg-transparent text-accent-light">
-                    <WhyLunaIcon type={feature.type} />
-                  </div>
-                  <h3 className="text-center text-[1.05rem] font-semibold leading-tight tracking-[-0.03em] text-foreground sm:text-[1.05rem]">
-                    {feature.title}
-                  </h3>
-                  <p className="mt-2 text-sm leading-6 text-text-secondary">
-                    {feature.description.map((line) => (
-                      <span key={line} className="block">{line}</span>
-                    ))}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </Container>
-      </section>
-      {/* Why Luna section: end */}
-
-
-      {/* Lunar journey CTA section: start */}
-      <section className="luna-journey-cta hidden relative isolate overflow-hidden py-10 text-center sm:py-12 lg:py-16">
-        <div aria-hidden="true" className="luna-journey-background luna-section-shadow pointer-events-none absolute inset-0 bg-[url('/images/bg-lunar-journey.png')] bg-cover bg-center">
-          <div className="absolute inset-0 bg-background/30" />
-        </div>
-        <Container className="relative">
-          <div data-luna-reveal className="mx-auto flex max-w-2xl flex-col items-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-accent-light sm:text-sm">
-              Let the Moon Guide You
-            </p>
-            <h2 className="mt-3 font-display text-4xl font-semibold leading-[0.9] tracking-[-0.05em] text-foreground sm:text-5xl lg:text-6xl">
-              Your Lunar Journey
-              <span className="block">Starts Here</span>
-            </h2>
-            <p className="mt-3 text-base text-foreground sm:text-lg">Explore. Learn. Connect.</p>
-            <ButtonLink href="/calendar" size="lg" className="mt-6">
-              Explore Calendar <ArrowRight aria-hidden="true" size={18} />
-            </ButtonLink>
-          </div>
-        </Container>
-      </section>
-      {/* Lunar journey CTA section: end */}
 
     </main>
   );
