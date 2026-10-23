@@ -52,6 +52,7 @@ export function SelectedDateDetails({ date, moon }: SelectedDateDetailsProps) {
             className="mt-5"
             surfaceImageSrc="/images/moon.png"
             decorative
+            showGlow={false}
             illumination={moon.illuminationPercentage}
             phase={moon.phaseName}
             size="md"

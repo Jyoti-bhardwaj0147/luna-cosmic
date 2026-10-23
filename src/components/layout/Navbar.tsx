@@ -45,7 +45,7 @@ export function Navbar() {
               <MoonStar aria-hidden="true" size={20} />
             </span>
             Luna Cosmic */}
-            <Image src="/images/logo.png" alt="Luna Cosmic Logo" className="" width={100} height={100} loading="eager" />
+            <Image src="/images/logo.png" alt="Luna Cosmic Logo" className="h-auto" width={100} height={100} loading="eager" />
           </Link>
           <button ref={toggleRef} type="button" aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? "Close navigation" : "Open navigation"}
             onClick={() => setOpen(!open)}

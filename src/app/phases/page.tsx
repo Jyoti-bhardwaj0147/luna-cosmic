@@ -6,6 +6,7 @@ import { MoonVisual } from "@/components/moon/MoonVisual";
 import type { MoonPhaseName } from "@/types/moon";
 import type { Metadata } from "next";
 import { siteUrl } from "../site-url";
+import { SparklesCore } from "@/components/ui/sparkles";
 
 export const metadata: Metadata = {
   title: "Moon Phase Guide",
@@ -27,7 +28,19 @@ const phaseGuide: Record<MoonPhaseName, { illumination: number; description: str
 export default function PhasesPage() {
   return (
     <main id="main-content" className="relative isolate overflow-hidden py-10 sm:py-14">
-      <div aria-hidden="true" className="luna-phases-aurora pointer-events-none absolute inset-0" />
+      <div aria-hidden="true" className="luna-phases-aurora pointer-events-none absolute inset-0" /> 
+       <div className="w-full absolute inset-0">
+        <SparklesCore
+          id="tsparticlesfullpage"
+          background="transparent"
+          minSize={0.6}
+          maxSize={1.4}
+          particleDensity={100}
+          className="w-full h-full"
+          particleColor="#FFFFFF"
+        />
+      </div>
+      
       <Container className="relative z-[1]">
         <SectionHeading
           eyebrow="Phases"
@@ -37,19 +50,19 @@ export default function PhasesPage() {
         />
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {MOON_PHASE_NAMES.map((phase) => (
-            <GlassCard as="article" className="min-w-0 p-5" key={phase}>
-              <MoonVisual phase={phase} illumination={phaseGuide[phase].illumination} size="sm" decorative showOrbit={false} className="mb-4" />
+            <GlassCard
+              as="article"
+              className="min-w-0 p-5"
+              style={{ backgroundColor: "rgba(17, 13, 32, 0.38)", backdropFilter: "blur(28px)", WebkitBackdropFilter: "blur(28px)" }}
+              key={phase}
+            >
+              <MoonVisual phase={phase} illumination={phaseGuide[phase].illumination} size="sm" decorative showGlow={false} showOrbit={false} className="mb-4" />
               <h2 className="text-lg font-semibold text-foreground">{phase}</h2>
               <p className="mt-3 text-sm leading- tracking-wide text-muted">{phaseGuide[phase].description}</p>
             </GlassCard>
           ))}
         </div>
-        <p className="mt-6 max-w-3xl text-sm leading-7 text-muted">
-          New Moon, First Quarter, Full Moon, and Last Quarter are the four major phases.
-          The illustrations show representative shapes, using the Northern Hemisphere
-          convention: waxing on the right and waning on the left. Your view may be rotated
-          or reversed depending on where you observe. Actual illumination varies with the date.
-        </p>
+        
         
       </Container>
     </main>

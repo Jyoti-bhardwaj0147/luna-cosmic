@@ -5,7 +5,7 @@ import { Container } from "@/components/ui/Container";
 
 export function Footer() {
   return (
-    <footer className="relative z-10 mt-auto bg-background/80 text-sm text-muted shadow-[0_-14px_40px_rgba(13,9,24,0.24)] backdrop-blur-sm motion-safe:transition-shadow motion-safe:duration-300">
+    <footer className="relative z-[999] mt-auto bg-background/60 text-sm text-muted shadow-[var(--shadow-soft)] backdrop-blur-sm transition-shadow duration-300">
       <Container>
         <div className="flex flex-col gap-4 border-b border-white/10 py-4 sm:py-1 sm:flex-row items-center sm:items-center sm:justify-between">
           <Link href="/" className="inline-flex w-fit items-center">
@@ -21,13 +21,13 @@ export function Footer() {
         <div className="flex flex-col gap-2 py-4 text-xs items-center sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Luna Cosmic</p>
           <p className="group flex items-center gap-2 self-center sm:self-end text-right">
-  <Moon
-    aria-hidden="true"
-    size={14}
-    className="text-accent-light motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-12"
-  />
-  The moon is always there.
-</p>
+            <Moon
+              aria-hidden="true"
+              size={14}
+              className="text-accent-light motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-12"
+            />
+            The moon is always there.
+          </p>
         </div>
       </Container>
     </footer>
