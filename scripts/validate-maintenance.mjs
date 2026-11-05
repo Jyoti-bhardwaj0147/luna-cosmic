@@ -21,7 +21,7 @@ function run(command, args, options = {}) {
 }
 run('python', ['-B', '-m', 'unittest', 'discover', '-s', 'tests', '-p', 'test_*.py']);
 for (const check of checks) {
-  // Windows npm.cmd needs a shell. Arguments here are fixed, never AI input.
+  // Windows npm.cmd needs a shell. Arguments here are fixed, never generated input.
   run(process.platform === 'win32' ? 'npm.cmd' : 'npm', ['run', check], {
     shell: process.platform === 'win32',
   });
