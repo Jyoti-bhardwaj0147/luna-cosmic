@@ -84,6 +84,17 @@ describe("month lengths and navigation", () => {
     expect(addMonths({ year: 2024, month: 12, day: 31 }, 2)).toEqual({ year: 2025, month: 2, day: 28 });
   });
 
+  test("subtracts days across leap day without losing a calendar day", () => {
+    expect(addDays({ year: 2024, month: 3, day: 1 }, -1)).toEqual({ year: 2024, month: 2, day: 29 });
+    expect(addDays({ year: 2023, month: 3, day: 1 }, -1)).toEqual({ year: 2023, month: 2, day: 28 });
+  });
+
+  test("clamps leap day when moving forward or backward a year", () => {
+    const leapDay = { year: 2024, month: 2, day: 29 };
+    expect(addMonths(leapDay, 12)).toEqual({ year: 2025, month: 2, day: 28 });
+    expect(addMonths(leapDay, -12)).toEqual({ year: 2023, month: 2, day: 28 });
+  });
+
   test.each([NaN, Infinity, -Infinity, 0.5, Number.MAX_SAFE_INTEGER + 1])(
     "rejects invalid arithmetic offset %s", (offset) => {
       const date = { year: 2024, month: 1, day: 1 };
