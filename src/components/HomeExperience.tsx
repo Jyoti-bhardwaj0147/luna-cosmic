@@ -3,8 +3,7 @@
 import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useReducedMotion } from "motion/react";
-import { ArrowRight, CalendarDays, ChevronDown, Leaf, MapPin, MonitorSmartphone, MoonStar, Mouse, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronDown, MoonStar, Mouse } from "lucide-react";
 import { getMoonData } from "@/lib/astronomy/moon";
 import { getDaysUntilFullMoon } from "@/lib/astronomy/phases";
 import { dateToLocalDate, formatLocalDate } from "@/lib/dates/local-date";
@@ -42,67 +41,8 @@ function ScrollCue() {
   );
 }
 
-function WhyLunaIcon({ type }: { type: "moon" | "calendar" | "sparkles" | "location" | "responsive" | "leaf" }) {
-  const commonProps = {
-    className: "h-10 w-10 text-accent-light sm:h-12 sm:w-12",
-    strokeWidth: 1.8,
-    "aria-hidden": true,
-  };
-
-  switch (type) {
-    case "moon":
-      return <MoonStar {...commonProps} />;
-    case "calendar":
-      return <CalendarDays {...commonProps} />;
-    case "sparkles":
-      return <Sparkles {...commonProps} />;
-    case "location":
-      return <MapPin {...commonProps} />;
-    case "responsive":
-      return <MonitorSmartphone {...commonProps} />;
-    case "leaf":
-      return <Leaf {...commonProps} />;
-    default:
-      return null;
-  }
-}
-
-const whyLunaFeatures = [
-  {
-    title: "Accurate Calculations",
-    description: ["Real-time lunar data with", "precise calculations."],
-    type: "moon" as const,
-  },
-  {
-    title: "Interactive Calendar",
-    description: ["Explore past and future", "moon phases."],
-    type: "calendar" as const,
-  },
-  {
-    title: "Beautiful Animations",
-    description: ["Smooth transitions and", "immersive visuals."],
-    type: "sparkles" as const,
-  },
-  {
-    title: "No Location Needed",
-    description: ["Explore moon phases without", "sharing your location."],
-    type: "location" as const,
-  },
-  {
-    title: "Fully Responsive",
-    description: ["Perfect experience on", "all devices."],
-    type: "responsive" as const,
-  },
-  {
-    title: "Mindful Living",
-    description: ["Align your plans with", "nature's rhythm."],
-    type: "leaf" as const,
-  },
-] as const;
-
 export function HomeExperience() {
   const mainRef = useRef<HTMLElement>(null);
-  const reduceMotion = useReducedMotion();
   const localDay = useSyncExternalStore(subscribe, getLocalDaySnapshot, getServerSnapshot);
   const today = useMemo(() => localDay === null ? null : dateToLocalDate(new Date(localDay)), [localDay]);
   const moon = useMemo(() => today === null ? null : getMoonData(today), [today]);
