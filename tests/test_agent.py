@@ -7,7 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stdout, redirect_stderr
 from unittest.mock import patch
 
 PROJECT = Path(__file__).resolve().parents[1]
@@ -132,6 +132,16 @@ class MaintenanceTests(unittest.TestCase):
         with redirect_stdout(io.StringIO()):
             self.assertEqual(agent.select_changes([oversized], ['src/a.ts']), {})
 
+    def test_transformer_failure_reports_diagnostics_without_edits(self):
+        result = subprocess.CompletedProcess([], 1, '', 'fixture transformer error\n')
+        errors = io.StringIO()
+        with patch.object(agent.subprocess, 'run', return_value=result), redirect_stderr(errors):
+            with self.assertRaises(agent.MaintenanceError):
+                agent.proposals(['src/a.ts'])
+        self.assertIn('fixture transformer error', errors.getvalue())
+        self.assertEqual(agent.changed_files(), [])
+        self.assertFalse(agent.receipt_path().exists())
+
     def test_document_is_stable_and_source_derived(self):
         names = ['src/app/calendar/page.tsx', 'src/app/page.tsx', 'src/app/layout.tsx']
         doc = agent.page_document(names)
@@ -187,6 +197,17 @@ class TransformerTests(unittest.TestCase):
         fixed = self.transform('export const values=[1,2,3]\n')
         self.assertEqual(fixed[0]['content'], 'export const values = [1, 2, 3];\n')
         self.assertEqual(self.transform(fixed[0]['content']), [])
+
+    def test_full_repository_input(self):
+        # Exercise the actual payload, not only a one-line formatting fixture.
+        proposals = agent.proposals(agent.tracked_files())
+        self.assertEqual(proposals[0]['path'], agent.DOC)
+        self.assertTrue(all(agent.permitted(item['path']) for item in proposals))
+
+    def test_large_piped_input(self):
+        content = '// lunar input\n' * 6000 + 'export const value=1\n'
+        fixed = self.transform(content)
+        self.assertEqual(fixed[0]['content'], content.replace('value=1\n', 'value = 1;\n'))
 
 
 if __name__ == '__main__':

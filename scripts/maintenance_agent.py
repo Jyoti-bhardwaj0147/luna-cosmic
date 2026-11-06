@@ -101,6 +101,8 @@ def proposals(names):
                             input=json.dumps(inputs), text=True, encoding='utf-8',
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=180)
     if result.returncode:
+        if result.stderr.strip():
+            print(result.stderr.strip(), file=sys.stderr)
         raise MaintenanceError('ESLint/Prettier transformation failed; no edits applied.')
     return [{'path': DOC, 'content': page_document(names)}, *json.loads(result.stdout)]
 
