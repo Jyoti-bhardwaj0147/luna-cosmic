@@ -27,6 +27,13 @@ def check(stage=False):
     staged = {n.decode() for n in git('diff', '--cached', '--name-only', '-z').split(b'\0') if n}
     if staged != set(files):
         raise MaintenanceError('Staged paths differ from validated files.')
+    # The working-tree diff can hide index-only mode changes when core.filemode
+    # is true. Check the exact staged modes that a commit would record as well.
+    raw = git('diff', '--cached', '--raw', '--no-renames').decode()
+    for record in raw.splitlines():
+        fields = record.split('\t')[0].split()
+        if fields[1] != '100644' or fields[4] not in {'M', 'A'}:
+            raise MaintenanceError('Staged deletion, rename or mode change rejected.')
     for name, sha in files.items():
         if digest(git('show', ':' + name)) != sha:
             raise MaintenanceError('Staged content differs from validated content.')

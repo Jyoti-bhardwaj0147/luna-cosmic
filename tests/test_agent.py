@@ -77,10 +77,18 @@ class MaintenanceTests(unittest.TestCase):
         with patch.object(agent, 'validate'), patch.object(agent, 'proposals', return_value=[self.change()]), redirect_stdout(io.StringIO()):
             agent.main()
             guard.check(stage=True)
-        self.run_git('update-index', '--chmod=+x', 'src/a.ts')
-        with self.assertRaises(agent.MaintenanceError):
-            guard.check()
-        self.run_git('update-index', '--chmod=-x', 'src/a.ts')
+        # Linux normally trusts filesystem modes; Windows normally does not.
+        # The index mode must be checked independently in both configurations.
+        for filemode in ('true', 'false'):
+            with self.subTest(filemode=filemode):
+                self.run_git('config', 'core.filemode', filemode)
+                self.run_git('update-index', '--chmod=+x', 'src/a.ts')
+                self.assertTrue(self.run_git('ls-files', '--stage', 'src/a.ts').startswith(b'100755 '))
+                with self.assertRaises(agent.MaintenanceError):
+                    guard.check()
+                self.run_git('update-index', '--chmod=-x', 'src/a.ts')
+                with redirect_stdout(io.StringIO()):
+                    guard.check()
         (self.root / 'package.json').write_text('{}')
         self.run_git('add', 'package.json')
         with self.assertRaises(agent.MaintenanceError):
