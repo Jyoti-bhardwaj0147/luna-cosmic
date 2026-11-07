@@ -8,7 +8,7 @@ import "./globals.css";
 import { Geist } from "next/font/google";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const inter = localFont({
   src: "./fonts/Inter-VariableFont_opsz,wght.ttf",
@@ -31,7 +31,8 @@ export const metadata: Metadata = {
     default: "Luna Cosmic",
     template: "%s | Luna Cosmic",
   },
-  description: "A local lunar calendar for Moon phase, illumination, age, and nearby major phases.",
+  description:
+    "A local lunar calendar for Moon phase, illumination, age, and nearby major phases.",
   applicationName: "Luna Cosmic",
   openGraph: {
     title: "Luna Cosmic",
@@ -45,13 +46,38 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", inter.variable, cormorantGaramond.variable, "font-sans", geist.variable)}
+      className={cn(
+        "h-full",
+        "antialiased",
+        inter.variable,
+        cormorantGaramond.variable,
+        "font-sans",
+        geist.variable,
+      )}
     >
       <body>
-        {siteUrl && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({ "@context": "https://schema.org", "@type": "WebSite", name: "Luna Cosmic", url: siteUrl, description: "A local lunar calendar for Moon phase, illumination, age, and nearby major phases." }).replace(/</g, "\\u003c") }} />}
-        <a className="skip-link" href="#main-content">Skip to main content</a>
+        {siteUrl && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "WebSite",
+                name: "Luna Cosmic",
+                url: siteUrl,
+                description:
+                  "A local lunar calendar for Moon phase, illumination, age, and nearby major phases.",
+              }).replace(/</g, "\\u003c"),
+            }}
+          />
+        )}
+        <a className="skip-link" href="#main-content">
+          Skip to main content
+        </a>
         <PageLoader />
-        <noscript><style>{`.luna-page-loader { display: none; }`}</style></noscript>
+        <noscript>
+          <style>{`.luna-page-loader { display: none; }`}</style>
+        </noscript>
         <div className="cosmic-shell" id="luna-page-content">
           <Navbar />
           {children}
