@@ -41,7 +41,9 @@ export function CalendarDay({
 }: CalendarDayProps) {
   const fullDate = formatLocalDate(date, fullDateOptions);
   const roundedIllumination = Math.round(moon.illuminationPercentage);
-  const adjacentDescription = isCurrentMonth ? "" : ", outside the displayed month";
+  const adjacentDescription = isCurrentMonth
+    ? ""
+    : ", outside the displayed month";
 
   return (
     <td className="p-0.5 align-top sm:p-1">
@@ -79,7 +81,10 @@ export function CalendarDay({
           size="xs"
         />
         {isToday ? (
-          <span aria-hidden="true" className="absolute bottom-0.5 text-[0.5rem] font-bold uppercase tracking-[0.08em] text-accent-blue sm:bottom-1">
+          <span
+            aria-hidden="true"
+            className="absolute bottom-0.5 text-[0.5rem] font-bold uppercase tracking-[0.08em] text-accent-blue sm:bottom-1"
+          >
             Today
           </span>
         ) : null}
