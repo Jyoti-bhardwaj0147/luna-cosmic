@@ -3,7 +3,14 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import gsap from "gsap";
 import type { KeyboardEvent } from "react";
-import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { CalendarDay } from "@/components/calendar/CalendarDay";
 import { SelectedDateDetails } from "@/components/calendar/SelectedDateDetails";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -77,14 +84,26 @@ type CalendarControllerProps = {
   showTwoWeeks: boolean;
 };
 
-function CalendarController({ headingId, initialDate, today, showSelectedDateDetails, showTwoWeeks }: CalendarControllerProps) {
+function CalendarController({
+  headingId,
+  initialDate,
+  today,
+  showSelectedDateDetails,
+  showTwoWeeks,
+}: CalendarControllerProps) {
   const [currentMonth, setCurrentMonth] = useState<CalendarMonth>(() => ({
     year: initialDate.year,
     month: initialDate.month,
   }));
-  const [displayedDate, setDisplayedDate] = useState<LocalDate>(() => copyDate(initialDate));
-  const [selectedDate, setSelectedDate] = useState<LocalDate>(() => copyDate(initialDate));
-  const [focusedDate, setFocusedDate] = useState<LocalDate>(() => copyDate(initialDate));
+  const [displayedDate, setDisplayedDate] = useState<LocalDate>(() =>
+    copyDate(initialDate),
+  );
+  const [selectedDate, setSelectedDate] = useState<LocalDate>(() =>
+    copyDate(initialDate),
+  );
+  const [focusedDate, setFocusedDate] = useState<LocalDate>(() =>
+    copyDate(initialDate),
+  );
   const pendingFocusKey = useRef<string | null>(null);
   const dayRefs = useRef(new Map<string, HTMLButtonElement>());
   const monthGridRef = useRef<HTMLTableSectionElement>(null);
@@ -92,28 +111,40 @@ function CalendarController({ headingId, initialDate, today, showSelectedDateDet
   const hasSelectedDate = useRef(false);
 
   const calendarDays = useMemo(() => {
-    const days = showTwoWeeks ? generateTwoWeekGrid(displayedDate) : generateMonthGrid(currentMonth);
+    const days = showTwoWeeks
+      ? generateTwoWeekGrid(displayedDate)
+      : generateMonthGrid(currentMonth);
 
     return days.map((day, index) => ({
       ...day,
       columnIndex: index % 7,
-      isNextMonth: showTwoWeeks && (day.date.year > displayedDate.year ||
-        (day.date.year === displayedDate.year && day.date.month > displayedDate.month)),
+      isNextMonth:
+        showTwoWeeks &&
+        (day.date.year > displayedDate.year ||
+          (day.date.year === displayedDate.year &&
+            day.date.month > displayedDate.month)),
       key: dateKey(day.date),
       moon: getMoonData(day.date),
     }));
   }, [currentMonth, displayedDate, showTwoWeeks]);
   const monthLabel = formatLocalDate(
-    { year: showTwoWeeks ? displayedDate.year : currentMonth.year, month: showTwoWeeks ? displayedDate.month : currentMonth.month, day: 1 },
+    {
+      year: showTwoWeeks ? displayedDate.year : currentMonth.year,
+      month: showTwoWeeks ? displayedDate.month : currentMonth.month,
+      day: 1,
+    },
     { month: "long", year: "numeric" },
   );
   const focusedKey = dateKey(focusedDate);
   const rovingKey = calendarDays.some((day) => day.key === focusedKey)
     ? focusedKey
-    : calendarDays.find((day) => day.isCurrentMonth)?.key ?? calendarDays[0].key;
+    : (calendarDays.find((day) => day.isCurrentMonth)?.key ??
+      calendarDays[0].key);
   const selectedKey = dateKey(selectedDate);
   const selectedMoon = useMemo(
-    () => calendarDays.find((day) => day.key === selectedKey)?.moon ?? getMoonData(selectedDate),
+    () =>
+      calendarDays.find((day) => day.key === selectedKey)?.moon ??
+      getMoonData(selectedDate),
     [calendarDays, selectedDate, selectedKey],
   );
 
@@ -127,13 +158,17 @@ function CalendarController({ headingId, initialDate, today, showSelectedDateDet
     if (!grid || typeof window.matchMedia !== "function") return;
     const media = gsap.matchMedia();
     media.add("(prefers-reduced-motion: no-preference)", () => {
-      gsap.fromTo(grid, { autoAlpha: 0.8, y: 8 }, {
-        autoAlpha: 1,
-        y: 0,
-        duration: 0.28,
-        ease: "power2.out",
-        clearProps: "opacity,visibility,transform",
-      });
+      gsap.fromTo(
+        grid,
+        { autoAlpha: 0.8, y: 8 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.28,
+          ease: "power2.out",
+          clearProps: "opacity,visibility,transform",
+        },
+      );
     });
     return () => media.revert();
   }, [currentMonth.year, currentMonth.month, displayedDate]);
@@ -148,12 +183,16 @@ function CalendarController({ headingId, initialDate, today, showSelectedDateDet
     if (!button || typeof window.matchMedia !== "function") return;
     const media = gsap.matchMedia();
     media.add("(prefers-reduced-motion: no-preference)", () => {
-      gsap.fromTo(button, { scale: 0.96 }, {
-        scale: 1,
-        duration: 0.24,
-        ease: "power2.out",
-        clearProps: "transform",
-      });
+      gsap.fromTo(
+        button,
+        { scale: 0.96 },
+        {
+          scale: 1,
+          duration: 0.24,
+          ease: "power2.out",
+          clearProps: "transform",
+        },
+      );
     });
     return () => media.revert();
   }, [selectedKey]);
@@ -204,9 +243,10 @@ function CalendarController({ headingId, initialDate, today, showSelectedDateDet
       setFocusedDate((date) => addDays(date, direction * 14));
       return;
     }
-    const nextMonth = direction === -1
-      ? getPreviousMonth(currentMonth)
-      : getNextMonth(currentMonth);
+    const nextMonth =
+      direction === -1
+        ? getPreviousMonth(currentMonth)
+        : getNextMonth(currentMonth);
     pendingFocusKey.current = null;
     setCurrentMonth(nextMonth);
     setFocusedDate((date) => addMonths(date, direction));
@@ -260,16 +300,27 @@ function CalendarController({ headingId, initialDate, today, showSelectedDateDet
   }
 
   return (
-    <div className={showSelectedDateDetails ? "grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-stretch" : "grid gap-6"}>
+    <div
+      className={
+        showSelectedDateDetails
+          ? "grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-stretch"
+          : "grid gap-6"
+      }
+    >
       <GlassCard as="div" className="min-w-0 overflow-hidden p-2.5 sm:p-5">
         <header className="mb-3 flex items-center justify-between gap-2 px-1 sm:mb-5">
           <IconButton
             className="focus-visible:border-accent-blue focus-visible:outline-[3px]! focus-visible:outline-solid! focus-visible:outline-accent-blue! focus-visible:outline-offset-2!"
             icon={<ChevronLeft size={18} strokeWidth={1.8} />}
-            label={showTwoWeeks ? "Show previous two weeks" : "Show previous month"}
+            label={
+              showTwoWeeks ? "Show previous two weeks" : "Show previous month"
+            }
             onClick={() => moveDisplayedRange(-1)}
           />
-          <h2 className="min-w-0 text-center font-display text-xl font-semibold leading-tight text-text-primary sm:text-2xl" id={headingId}>
+          <h2
+            className="min-w-0 text-center font-display text-xl font-semibold leading-tight text-text-primary sm:text-2xl"
+            id={headingId}
+          >
             {monthLabel}
           </h2>
           <IconButton
@@ -280,7 +331,10 @@ function CalendarController({ headingId, initialDate, today, showSelectedDateDet
           />
         </header>
 
-        <table className="w-full table-fixed border-separate border-spacing-0" aria-describedby={`${headingId}-instructions`}>
+        <table
+          className="w-full table-fixed border-separate border-spacing-0"
+          aria-describedby={`${headingId}-instructions`}
+        >
           <caption className="sr-only">
             {showTwoWeeks
               ? `Lunar calendar for ${formatLocalDate(calendarDays[0].date, { month: "long", day: "numeric", year: "numeric" })} through ${formatLocalDate(calendarDays[13].date, { month: "long", day: "numeric", year: "numeric" })}, Monday through Sunday.`
@@ -289,7 +343,11 @@ function CalendarController({ headingId, initialDate, today, showSelectedDateDet
           <thead>
             <tr>
               {weekdays.map((weekday) => (
-                <th className="pb-1.5 text-center text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-text-secondary sm:pb-2 sm:text-xs" key={weekday.long} scope="col">
+                <th
+                  className="pb-1.5 text-center text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-text-secondary sm:pb-2 sm:text-xs"
+                  key={weekday.long}
+                  scope="col"
+                >
                   <span aria-hidden="true">{weekday.short}</span>
                   <span className="sr-only">{weekday.long}</span>
                 </th>
@@ -316,9 +374,12 @@ function CalendarController({ headingId, initialDate, today, showSelectedDateDet
                       moon={day.moon}
                       onActivate={activateDate}
                       onFocusDate={(date) => {
-                        if (!isSameLocalDate(date, focusedDate)) setFocusedDate(copyDate(date));
+                        if (!isSameLocalDate(date, focusedDate))
+                          setFocusedDate(copyDate(date));
                       }}
-                      onKeyDown={(event, date) => handleDayKeyDown(event, date, day.columnIndex)}
+                      onKeyDown={(event, date) =>
+                        handleDayKeyDown(event, date, day.columnIndex)
+                      }
                       tabIndex={day.key === rovingKey ? 0 : -1}
                     />
                   ))}
@@ -328,24 +389,38 @@ function CalendarController({ headingId, initialDate, today, showSelectedDateDet
           </tbody>
         </table>
         <p className="sr-only" id={`${headingId}-instructions`}>
-          Use the arrow keys to move by day or week and Home and End to move within a week. {showTwoWeeks ? "" : "Use Page Up and Page Down to move by month. "}Press Enter or Space to select a date.
+          Use the arrow keys to move by day or week and Home and End to move
+          within a week.{" "}
+          {showTwoWeeks ? "" : "Use Page Up and Page Down to move by month. "}
+          Press Enter or Space to select a date.
         </p>
       </GlassCard>
 
-      {showSelectedDateDetails && <SelectedDateDetails date={selectedDate} moon={selectedMoon} />}
+      {showSelectedDateDetails && (
+        <SelectedDateDetails date={selectedDate} moon={selectedMoon} />
+      )}
     </div>
   );
 }
 
-export function LunarCalendar({ initialDate, showSelectedDateDetails = true, showTwoWeeks = false }: LunarCalendarProps) {
+export function LunarCalendar({
+  initialDate,
+  showSelectedDateDetails = true,
+  showTwoWeeks = false,
+}: LunarCalendarProps) {
   const headingId = useId();
-  const localDay = useSyncExternalStore(subscribe, getLocalDaySnapshot, getServerSnapshot);
+  const localDay = useSyncExternalStore(
+    subscribe,
+    getLocalDaySnapshot,
+    getServerSnapshot,
+  );
   const suppliedDate = initialDate ? copyDate(initialDate) : null;
-  const resolvedDate = suppliedDate
-    ?? (localDay === null ? null : dateToLocalDate(new Date(localDay)));
+  const resolvedDate =
+    suppliedDate ??
+    (localDay === null ? null : dateToLocalDate(new Date(localDay)));
 
   return (
-    <section aria-labelledby={headingId} >
+    <section aria-labelledby={headingId}>
       {resolvedDate ? (
         <CalendarController
           headingId={headingId}
@@ -356,9 +431,16 @@ export function LunarCalendar({ initialDate, showSelectedDateDetails = true, sho
           today={resolvedDate}
         />
       ) : (
-        <GlassCard as="div" className="flex min-h-80 items-center justify-center p-6 text-center">
-          <h2 className="sr-only" id={headingId}>Lunar calendar</h2>
-          <p className="text-sm text-text-secondary" role="status">Preparing your local lunar calendar…</p>
+        <GlassCard
+          as="div"
+          className="flex min-h-80 items-center justify-center p-6 text-center"
+        >
+          <h2 className="sr-only" id={headingId}>
+            Lunar calendar
+          </h2>
+          <p className="text-sm text-text-secondary" role="status">
+            Preparing your local lunar calendar…
+          </p>
         </GlassCard>
       )}
     </section>
