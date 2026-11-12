@@ -2,6 +2,7 @@ import importlib.util
 import io
 import json
 import os
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -163,6 +164,27 @@ class MaintenanceTests(unittest.TestCase):
             guard.check(stage=True)
             guard.check()
 
+    def test_approval_token_binds_base_paths_and_content(self):
+        receipt = {'head': 'base', 'files': {'src/a.ts': 'content-hash'}}
+        path = agent.receipt_path()
+        path.write_text(json.dumps(receipt))
+        token = agent.approval_digest()
+        path.write_text(json.dumps(receipt, sort_keys=True, indent=2))
+        self.assertEqual(token, agent.approval_digest())
+        for changed in (
+            {'head': 'new-base', 'files': receipt['files']},
+            {'head': 'base', 'files': {'src/b.ts': 'content-hash'}},
+            {'head': 'base', 'files': {'src/a.ts': 'new-content'}},
+        ):
+            path.write_text(json.dumps(changed))
+            self.assertNotEqual(token, agent.approval_digest())
+
+    def test_no_change_output_is_explicit(self):
+        output = self.root / '.git' / 'test-output'
+        with patch.dict(os.environ, {'GITHUB_OUTPUT': str(output)}), patch.object(agent, 'validate'), patch.object(agent, 'proposals', return_value=[]), redirect_stdout(io.StringIO()):
+            agent.main()
+        self.assertEqual(output.read_text(), 'has_changes=false\n')
+
     def test_bot_attribution_and_workflow_gates(self):
         workflow = (PROJECT / '.github/workflows/ai-maintenance.yml').read_text()
         name = 'github-actions[bot]'
@@ -174,6 +196,15 @@ class MaintenanceTests(unittest.TestCase):
         self.assertNotIn('git add -A', workflow)
         self.assertIn("41 5 * * 1-6", workflow)
         self.assertNotIn('continue-on-error', workflow)
+        self.assertIn("if: github.ref == 'refs/heads/main'", workflow)
+        self.assertIn('HEAD:refs/heads/main', workflow)
+        self.assertIn('[ "$APPROVED_DIGEST" != "$REVIEW_DIGEST" ]', workflow)
+        self.assertIn('[ "$GITHUB_ACTOR" != Jyoti-bhardwaj0147 ]', workflow)
+        self.assertIn('[ "$GITHUB_TRIGGERING_ACTOR" != Jyoti-bhardwaj0147 ]', workflow)
+        self.assertIn('secrets.MAINTENANCE_AUTHOR_EMAIL', workflow)
+        self.assertIn('default: preview', workflow)
+        self.assertNotIn('--force', workflow)
+        self.assertIn('git rev-parse FETCH_HEAD', workflow)
         self.run_git('-c', 'user.name=' + name, '-c', 'user.email=' + email,
                      'commit', '--allow-empty', '-qm', 'bot fixture')
         self.assertEqual(self.run_git('log', '-1', '--format=%an <%ae>').decode().strip(), f'{name} <{email}>')
@@ -184,6 +215,70 @@ class MaintenanceTests(unittest.TestCase):
             source = (PROJECT / name).read_text().lower()
             for forbidden in ('urllib', 'requests.', 'fetch(', 'api.openai', 'openai_api_key', 'maintenance_model'):
                 self.assertNotIn(forbidden, source, name)
+
+
+class WorkflowCommitTests(unittest.TestCase):
+    def run_commit_step(self, **overrides):
+        bash = shutil.which('bash')
+        if not bash and os.name == 'nt':
+            candidate = Path('C:/Program Files/Git/bin/bash.exe')
+            bash = str(candidate) if candidate.exists() else None
+        if not bash:
+            self.skipTest('Bash is required for workflow shell regression tests')
+        workflow = (PROJECT / '.github/workflows/ai-maintenance.yml').read_text()
+        step = workflow.split('      - name: Commit and push validated maintenance directly\n')[1]
+        script = step.split('        run: |\n')[1].split('      - name:')[0]
+        script = '\n'.join(line[10:] for line in script.splitlines())
+        # Execute the actual workflow shell with local transport/commit stubs.
+        stubs = '''
+python() { :; }
+git() {
+  case "$*" in
+    'diff --cached --quiet') return 1 ;;
+    *'fetch origin'*) return 0 ;;
+    'rev-parse FETCH_HEAD') echo "$REMOTE_HEAD" ;;
+    'rev-parse HEAD') echo base ;;
+    'commit '*) echo "COMMIT_AUTHOR=${GIT_AUTHOR_NAME:-github-actions[bot]}" ;;
+    *'push origin'*) echo PUSH_ATTEMPT; return "$PUSH_STATUS" ;;
+  esac
+}
+'''
+        env = {**os.environ, 'MODE': 'approved', 'GH_TOKEN': 'fixture',
+               'APPROVED_DIGEST': 'exact', 'REVIEW_DIGEST': 'exact',
+               'GITHUB_EVENT_NAME': 'workflow_dispatch',
+               'GITHUB_ACTOR': 'Jyoti-bhardwaj0147',
+               'GITHUB_TRIGGERING_ACTOR': 'Jyoti-bhardwaj0147',
+               'MAINTENANCE_AUTHOR_EMAIL': 'fixture@example.invalid',
+               'REMOTE_HEAD': 'base', 'PUSH_STATUS': '0', **overrides}
+        env.pop('GIT_AUTHOR_NAME', None)
+        env.pop('GIT_AUTHOR_EMAIL', None)
+        return subprocess.run([bash, '-c', stubs + script], env=env, capture_output=True, text=True)
+
+    def test_approved_author_and_scheduled_bot(self):
+        approved = self.run_commit_step()
+        self.assertEqual(approved.returncode, 0, approved.stderr)
+        self.assertIn('COMMIT_AUTHOR=Jyoti-bhardwaj0147', approved.stdout)
+        bot = self.run_commit_step(MODE='', GITHUB_EVENT_NAME='schedule', MAINTENANCE_AUTHOR_EMAIL='')
+        self.assertEqual(bot.returncode, 0, bot.stderr)
+        self.assertIn('COMMIT_AUTHOR=github-actions[bot]', bot.stdout)
+
+    def test_invalid_approval_blocks_commit_and_push(self):
+        for override in ({'APPROVED_DIGEST': ''}, {'APPROVED_DIGEST': 'stale'},
+                         {'GITHUB_ACTOR': 'other'}, {'GITHUB_TRIGGERING_ACTOR': 'other'},
+                         {'MAINTENANCE_AUTHOR_EMAIL': ''}, {'GITHUB_EVENT_NAME': 'schedule'}):
+            with self.subTest(override=override):
+                result = self.run_commit_step(**override)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertNotIn('COMMIT_AUTHOR=', result.stdout)
+                self.assertNotIn('PUSH_ATTEMPT', result.stdout)
+
+    def test_concurrent_update_and_push_failure(self):
+        moved = self.run_commit_step(REMOTE_HEAD='advanced')
+        self.assertNotEqual(moved.returncode, 0)
+        self.assertNotIn('COMMIT_AUTHOR=', moved.stdout)
+        failed = self.run_commit_step(PUSH_STATUS='1')
+        self.assertNotEqual(failed.returncode, 0)
+        self.assertIn('Push failed', failed.stdout)
 
 
 class TransformerTests(unittest.TestCase):

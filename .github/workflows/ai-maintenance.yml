@@ -5,17 +5,27 @@ on:
     # Monday–Saturday, 05:41 UTC = 11:11 IST (Asia/Kolkata).
     - cron: '41 5 * * 1-6'
   workflow_dispatch:
+    inputs:
+      mode:
+        description: Preview changes, commit as bot, or approve an exact preview
+        type: choice
+        options: [preview, bot, approved]
+        default: preview
+      approved_digest:
+        description: Exact review token from a validated preview (approved mode only)
+        type: string
+        default: ''
 
 permissions:
   contents: read
 
 concurrency:
-  group: ai-maintenance-${{ github.ref }}
+  group: ai-maintenance-main
   cancel-in-progress: false
 
 jobs:
   maintain:
-    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -23,7 +33,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout default branch
+      - name: Checkout main revision
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 (Node 24)
         with:
           persist-credentials: false
@@ -57,11 +67,27 @@ jobs:
       - name: Validate and apply deterministic maintenance
         id: agent
         run: python scripts/maintenance_agent.py
-      - name: Commit and push validated maintenance directly
+      - name: Review validated maintenance
         if: steps.agent.outputs.has_changes == 'true'
+        id: review
+        run: |
+          set -euo pipefail
+          python scripts/check_staged.py --stage
+          git diff --cached --check
+          git diff --cached --no-ext-diff
+          DIGEST="$(PYTHONPATH=scripts python -c 'from maintenance_agent import approval_digest; print(approval_digest())')"
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+          echo "Review token: $DIGEST"
+          echo "Changes detected and validated. Review token: \`$DIGEST\`" >> "$GITHUB_STEP_SUMMARY"
+      - name: Commit and push validated maintenance directly
+        if: steps.agent.outputs.has_changes == 'true' && (github.event_name == 'schedule' || inputs.mode != 'preview')
         env:
-          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           GH_TOKEN: ${{ github.token }}
+          MODE: ${{ inputs.mode }}
+          APPROVED_DIGEST: ${{ inputs.approved_digest }}
+          REVIEW_DIGEST: ${{ steps.review.outputs.digest }}
+          # Only expose the author secret to the owner-approved commit step.
+          MAINTENANCE_AUTHOR_EMAIL: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'approved' && github.actor == 'Jyoti-bhardwaj0147' && github.triggering_actor == 'Jyoti-bhardwaj0147' && secrets.MAINTENANCE_AUTHOR_EMAIL || '' }}
         run: |
           set -euo pipefail
           # Stage only exact files covered by the successful validation receipt.
@@ -73,8 +99,40 @@ jobs:
           git diff --cached --check
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'chore: apply validated deterministic maintenance'
-          # Supply credentials only for push, never to generated code validation.
+          if [ "$MODE" = approved ]; then
+            if [ "$GITHUB_EVENT_NAME" != workflow_dispatch ] ||
+               [ "$GITHUB_ACTOR" != Jyoti-bhardwaj0147 ] ||
+               [ "$GITHUB_TRIGGERING_ACTOR" != Jyoti-bhardwaj0147 ] ||
+               [ -z "$APPROVED_DIGEST" ] || [ "$APPROVED_DIGEST" != "$REVIEW_DIGEST" ] ||
+               [ -z "$MAINTENANCE_AUTHOR_EMAIL" ]; then
+              echo '::error::Personal attribution requires owner approval of this exact review token and MAINTENANCE_AUTHOR_EMAIL.'
+              exit 1
+            fi
+            export GIT_AUTHOR_NAME='Jyoti-bhardwaj0147'
+            export GIT_AUTHOR_EMAIL="$MAINTENANCE_AUTHOR_EMAIL"
+          fi
+          # Fetch before commit; never rebase a diff onto an unvalidated base.
           AUTH_HEADER="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           echo "::add-mask::$AUTH_HEADER"
-          git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $AUTH_HEADER" push origin "HEAD:refs/heads/${DEFAULT_BRANCH}"
+          if ! git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $AUTH_HEADER" fetch origin refs/heads/main; then
+            echo '::error::Fetch failed; no commit or push attempted.'
+            exit 1
+          fi
+          if [ "$(git rev-parse FETCH_HEAD)" != "$(git rev-parse HEAD)" ]; then
+            echo '::error::Main advanced; no commit created. Run again to validate the new base and renew any approval.'
+            exit 1
+          fi
+          # Quiet avoids printing the personal author identity in the run log.
+          # Git commit metadata necessarily retains the chosen author email.
+          git commit --quiet -m 'chore: apply validated deterministic maintenance'
+          echo "Commit successfully created: $(git rev-parse HEAD)"
+          # Credentials are scoped to Git transport, never validation commands.
+          if git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $AUTH_HEADER" push origin HEAD:refs/heads/main; then
+            echo 'Push completed to main.'
+          else
+            echo '::error::Push failed. Check branch rules, token permissions, or concurrent updates. Start a fresh run; no force push or unvalidated rebase is attempted.'
+            exit 1
+          fi
+      - name: No-change summary
+        if: steps.agent.outputs.has_changes == 'false'
+        run: echo 'Maintenance completed with no changes; no commit or push required.' >> "$GITHUB_STEP_SUMMARY"

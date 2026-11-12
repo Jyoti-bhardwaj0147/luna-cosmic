@@ -119,6 +119,12 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def approval_digest():
+    # Bind approval to the validated base revision, paths, and exact file hashes.
+    receipt = json.loads(receipt_path().read_text(encoding='utf-8'))
+    return digest(json.dumps(receipt, sort_keys=True).encode('utf-8'))
+
+
 def verify_changes(expected):
     if set(changed_files()) != set(expected):
         raise MaintenanceError('Unexpected paths changed during maintenance/validation; commit blocked.')
@@ -142,6 +148,9 @@ def verify_changes(expected):
 
 
 def main():
+    if os.environ.get('GITHUB_OUTPUT'):
+        with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+            output.write('has_changes=false\n')
     receipt = receipt_path()
     receipt.unlink(missing_ok=True)  # Only our prior validation receipt, never source files.
     require_clean_tree()
@@ -151,7 +160,7 @@ def main():
     names = tracked_files()
     selected = select_changes(proposals(names), names)
     if not selected:
-        print('No relevant changes; skipping commit.')
+        print('Maintenance completed with no changes; no commit created.')
         return
     for name, content in selected.items():
         (ROOT / name).parent.mkdir(parents=True, exist_ok=True)
@@ -165,7 +174,7 @@ def main():
     if os.environ.get('GITHUB_OUTPUT'):
         with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
             output.write('has_changes=true\n')
-    print('Validated changes: ' + ', '.join(json.dumps(n) for n in selected))
+    print('Changes detected and validated: ' + ', '.join(json.dumps(n) for n in selected))
 
 
 if __name__ == '__main__':
