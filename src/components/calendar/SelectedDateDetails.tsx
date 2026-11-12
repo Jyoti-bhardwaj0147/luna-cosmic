@@ -29,8 +29,13 @@ function toDateTime(date: LocalDate): string {
 function MajorPhaseValue({ phase }: { phase: MoonMajorPhase }) {
   return (
     <>
-      <span className="block font-semibold text-text-primary">{phase.name}</span>
-      <time className="mt-1 block text-xs text-text-secondary" dateTime={toDateTime(phase.date)}>
+      <span className="block font-semibold text-text-primary">
+        {phase.name}
+      </span>
+      <time
+        className="mt-1 block text-xs text-text-secondary"
+        dateTime={toDateTime(phase.date)}
+      >
         {formatLocalDate(phase.date, phaseDateOptions)}
       </time>
     </>
@@ -44,8 +49,13 @@ export function SelectedDateDetails({ date, moon }: SelectedDateDetailsProps) {
     <aside aria-labelledby={headingId}>
       <GlassCard as="div" className="h-full p-5 sm:p-6">
         <div className="flex flex-col items-center text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-light">Selected date</p>
-          <time className="mt-2 text-sm leading-6 text-text-secondary" dateTime={toDateTime(date)}>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-light">
+            Selected date
+          </p>
+          <time
+            className="mt-2 text-sm leading-6 text-text-secondary"
+            dateTime={toDateTime(date)}
+          >
             {formatLocalDate(date, fullDateOptions)}
           </time>
           <MoonVisual
@@ -58,7 +68,10 @@ export function SelectedDateDetails({ date, moon }: SelectedDateDetailsProps) {
             size="md"
             showOrbit={false}
           />
-          <h3 className="mt-4 font-display text-3xl font-semibold leading-tight text-text-primary" id={headingId}>
+          <h3
+            className="mt-4 font-display text-3xl font-semibold leading-tight text-text-primary"
+            id={headingId}
+          >
             {moon.phaseName}
           </h3>
         </div>
@@ -77,12 +90,18 @@ export function SelectedDateDetails({ date, moon }: SelectedDateDetailsProps) {
             </dd>
           </div>
           <div className="col-span-2 rounded-xl border border-border-subtle bg-white/[0.035] p-3">
-            <dt className="text-xs text-text-secondary">Previous major phase</dt>
-            <dd className="mt-1"><MajorPhaseValue phase={moon.previousMajorPhase} /></dd>
+            <dt className="text-xs text-text-secondary">
+              Previous major phase
+            </dt>
+            <dd className="mt-1">
+              <MajorPhaseValue phase={moon.previousMajorPhase} />
+            </dd>
           </div>
           <div className="col-span-2 rounded-xl border border-border-subtle bg-white/[0.035] p-3">
             <dt className="text-xs text-text-secondary">Next major phase</dt>
-            <dd className="mt-1"><MajorPhaseValue phase={moon.nextMajorPhase} /></dd>
+            <dd className="mt-1">
+              <MajorPhaseValue phase={moon.nextMajorPhase} />
+            </dd>
           </div>
         </dl>
       </GlassCard>
