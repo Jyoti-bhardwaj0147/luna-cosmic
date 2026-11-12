@@ -5,9 +5,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Navbar } from "./Navbar";
 
 beforeEach(() => {
-  vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+  vi.stubGlobal(
+    "matchMedia",
+    vi.fn(() => ({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })),
+  );
 });
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe("mobile navigation", () => {
   it("opens with the toggle and closes with Escape, restoring focus", () => {
@@ -27,8 +37,10 @@ describe("mobile navigation", () => {
     render(createElement(Navbar));
     const toggle = screen.getByRole("button", { name: "Open navigation" });
     fireEvent.click(toggle);
-    const link = document.querySelector<HTMLAnchorElement>('#mobile-navigation a[href="/calendar"]');
-    link?.addEventListener("click", event => event.preventDefault());
+    const link = document.querySelector<HTMLAnchorElement>(
+      '#mobile-navigation a[href="/calendar"]',
+    );
+    link?.addEventListener("click", (event) => event.preventDefault());
     fireEvent.click(link!);
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     fireEvent.click(toggle);
