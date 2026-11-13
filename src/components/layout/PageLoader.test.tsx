@@ -25,9 +25,15 @@ describe("PageLoader", () => {
     render(createElement(PageLoader));
     expect(document.getElementById("luna-page-content")?.inert).toBe(true);
     expect(document.body.style.overflow).toBe("hidden");
-    await act(async () => { await vi.advanceTimersByTimeAsync(8000); });
-    expect(screen.getByRole("status").getAttribute("data-leaving")).toBe("true");
-    await act(async () => { await vi.advanceTimersByTimeAsync(350); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(8000);
+    });
+    expect(screen.getByRole("status").getAttribute("data-leaving")).toBe(
+      "true",
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(350);
+    });
     expect(screen.queryByRole("status")).toBeNull();
     expect(document.getElementById("luna-page-content")?.inert).toBe(false);
     expect(document.body.style.overflow).toBe("auto");
@@ -35,16 +41,33 @@ describe("PageLoader", () => {
 
   it("waits for fonts before fading out", async () => {
     let resolveFonts!: () => void;
-    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => setTimeout(() => callback(0), 16));
-    const ready = new Promise<void>((resolve) => { resolveFonts = resolve; });
-    Object.defineProperty(document, "fonts", { configurable: true, value: { ready } });
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) =>
+      setTimeout(() => callback(0), 16),
+    );
+    const ready = new Promise<void>((resolve) => {
+      resolveFonts = resolve;
+    });
+    Object.defineProperty(document, "fonts", {
+      configurable: true,
+      value: { ready },
+    });
     render(createElement(PageLoader));
     window.dispatchEvent(new Event("load"));
-    await act(async () => { await vi.advanceTimersByTimeAsync(100); });
-    expect(screen.getByRole("status").getAttribute("data-leaving")).toBe("false");
-    await act(async () => { resolveFonts(); });
-    expect(screen.getByRole("status").getAttribute("data-leaving")).toBe("true");
-    await act(async () => { await vi.advanceTimersByTimeAsync(350); });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
+    expect(screen.getByRole("status").getAttribute("data-leaving")).toBe(
+      "false",
+    );
+    await act(async () => {
+      resolveFonts();
+    });
+    expect(screen.getByRole("status").getAttribute("data-leaving")).toBe(
+      "true",
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(350);
+    });
     expect(screen.queryByRole("status")).toBeNull();
     vi.unstubAllGlobals();
     Reflect.deleteProperty(document, "fonts");
