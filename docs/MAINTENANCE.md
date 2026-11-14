@@ -2,7 +2,7 @@
 
 The workflow retains its existing filename, `.github/workflows/ai-maintenance.yml`,
 but uses no AI service, API credentials, model, or local language model. Existing
-repository secrets are not used or deleted. API cost is zero; GitHub-hosted runner
+AI service secrets are not used or deleted. API cost is zero; GitHub-hosted runner
 minutes remain subject to your GitHub plan and usage allowance.
 
 ## Schedule and execution
@@ -60,8 +60,20 @@ runs produce no receipt/handoff; edits are left for inspection rather than reset
 No-change runs succeed with a clean working tree and do not create a commit.
 
 The maintenance job alone has `contents: write`. The push token is provided only
-to the final commit/push step. Author and committer are `github-actions[bot]`
-(`41898282+github-actions[bot]@users.noreply.github.com`). There is no force push,
+to the final commit/push step. Author and committer are `Jyoti-bhardwaj0147`, using
+the repository Actions secret `MAINTENANCE_AUTHOR_EMAIL`. Set this secret under
+Settings -> Secrets and variables -> Actions to an email associated with that
+GitHub account, or copy the exact GitHub-provided noreply address from the
+account's Settings -> Emails. A missing secret stops commits instead of falling
+back to bot attribution. This applies to scheduled runs and manual `commit` runs;
+`preview` does not commit. Manual `approved` mode still requires the owner and
+the exact validated preview token. Existing commits are not rewritten.
+
+GitHub contribution credit requires an associated email and commits on the
+default branch (this workflow targets `main`); updates can take up to 24 hours.
+The push still authenticates through `GITHUB_TOKEN`, so Actions can remain visible
+as the pushing application even though commit metadata identifies the owner.
+There is no force push,
 PAT, branch-protection bypass, or manual PR approval. If branch protection blocks
 direct bot pushes, the run fails; repository policy must allow this workflow for
 unattended direct commits to work.

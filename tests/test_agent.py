@@ -185,12 +185,12 @@ class MaintenanceTests(unittest.TestCase):
             agent.main()
         self.assertEqual(output.read_text(), 'has_changes=false\n')
 
-    def test_bot_attribution_and_workflow_gates(self):
+    def test_owner_attribution_and_workflow_gates(self):
         workflow = (PROJECT / '.github/workflows/ai-maintenance.yml').read_text()
-        name = 'github-actions[bot]'
-        email = '41898282+github-actions[bot]@users.noreply.github.com'
+        name = 'Jyoti-bhardwaj0147'
+        email = 'fixture@example.invalid'
         self.assertIn("git config user.name '" + name + "'", workflow)
-        self.assertIn("git config user.email '" + email + "'", workflow)
+        self.assertIn('git config user.email "$MAINTENANCE_AUTHOR_EMAIL"', workflow)
         self.assertIn("if: steps.agent.outputs.has_changes == 'true'", workflow)
         self.assertIn('python scripts/check_staged.py --stage', workflow)
         self.assertNotIn('git add -A', workflow)
@@ -206,7 +206,7 @@ class MaintenanceTests(unittest.TestCase):
         self.assertNotIn('--force', workflow)
         self.assertIn('git rev-parse FETCH_HEAD', workflow)
         self.run_git('-c', 'user.name=' + name, '-c', 'user.email=' + email,
-                     'commit', '--allow-empty', '-qm', 'bot fixture')
+                     'commit', '--allow-empty', '-qm', 'owner fixture')
         self.assertEqual(self.run_git('log', '-1', '--format=%an <%ae>').decode().strip(), f'{name} <{email}>')
 
     def test_no_external_service_dependency(self):
@@ -238,7 +238,9 @@ git() {
     *'fetch origin'*) return 0 ;;
     'rev-parse FETCH_HEAD') echo "$REMOTE_HEAD" ;;
     'rev-parse HEAD') echo base ;;
-    'commit '*) echo "COMMIT_AUTHOR=${GIT_AUTHOR_NAME:-github-actions[bot]}" ;;
+    'config user.name '*) COMMIT_NAME="$3" ;;
+    'config user.email '*) COMMIT_EMAIL="$3" ;;
+    'commit '*) echo "COMMIT_AUTHOR=$COMMIT_NAME"; echo "COMMIT_EMAIL=$COMMIT_EMAIL" ;;
     *'push origin'*) echo PUSH_ATTEMPT; return "$PUSH_STATUS" ;;
   esac
 }
@@ -254,13 +256,21 @@ git() {
         env.pop('GIT_AUTHOR_EMAIL', None)
         return subprocess.run([bash, '-c', stubs + script], env=env, capture_output=True, text=True)
 
-    def test_approved_author_and_scheduled_bot(self):
+    def test_owner_attribution_in_all_commit_modes(self):
         approved = self.run_commit_step()
         self.assertEqual(approved.returncode, 0, approved.stderr)
         self.assertIn('COMMIT_AUTHOR=Jyoti-bhardwaj0147', approved.stdout)
-        bot = self.run_commit_step(MODE='', GITHUB_EVENT_NAME='schedule', MAINTENANCE_AUTHOR_EMAIL='')
-        self.assertEqual(bot.returncode, 0, bot.stderr)
-        self.assertIn('COMMIT_AUTHOR=github-actions[bot]', bot.stdout)
+        for mode, event in (('', 'schedule'), ('commit', 'workflow_dispatch')):
+            with self.subTest(mode=mode):
+                result = self.run_commit_step(MODE=mode, GITHUB_EVENT_NAME=event)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn('COMMIT_AUTHOR=Jyoti-bhardwaj0147', result.stdout)
+                self.assertIn('COMMIT_EMAIL=fixture@example.invalid', result.stdout)
+                missing = self.run_commit_step(MODE=mode, GITHUB_EVENT_NAME=event,
+                                               MAINTENANCE_AUTHOR_EMAIL='')
+                self.assertNotEqual(missing.returncode, 0)
+                self.assertNotIn('COMMIT_AUTHOR=', missing.stdout)
+                self.assertNotIn('PUSH_ATTEMPT', missing.stdout)
 
     def test_invalid_approval_blocks_commit_and_push(self):
         for override in ({'APPROVED_DIGEST': ''}, {'APPROVED_DIGEST': 'stale'},
