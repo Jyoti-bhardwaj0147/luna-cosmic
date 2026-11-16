@@ -16,7 +16,17 @@ const getLocalDaySnapshot = () => {
 
 export function TodayMoon() {
   // React uses the null server snapshot for both SSR and the hydration render.
-  const localDay = useSyncExternalStore(subscribe, getLocalDaySnapshot, getServerSnapshot);
-  const model = useMemo(() => localDay === null ? null : createTodayMoonViewModel(dateToLocalDate(new Date(localDay))), [localDay]);
+  const localDay = useSyncExternalStore(
+    subscribe,
+    getLocalDaySnapshot,
+    getServerSnapshot,
+  );
+  const model = useMemo(
+    () =>
+      localDay === null
+        ? null
+        : createTodayMoonViewModel(dateToLocalDate(new Date(localDay))),
+    [localDay],
+  );
   return <TodayMoonContent model={model} />;
 }
