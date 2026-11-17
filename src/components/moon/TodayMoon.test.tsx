@@ -30,47 +30,77 @@ describe("Today's Moon presentation", () => {
     const date = Object.freeze({ ...fixedDate });
     const model = createTodayMoonViewModel(date);
     expect(model.moon).toEqual(getMoonData(date));
-    expect(model.illuminationLabel).toBe(`${Math.round(model.moon.illuminationPercentage)}%`);
+    expect(model.illuminationLabel).toBe(
+      `${Math.round(model.moon.illuminationPercentage)}%`,
+    );
     expect(model.ageLabel).toBe(`${model.moon.moonAgeDays.toFixed(1)} days`);
     expect(model.dateLabel).toBe("Friday, September 18, 2026");
     expect(date).toEqual(fixedDate);
     expect(createTodayMoonViewModel(date)).toEqual(model);
   });
 
-  it.each(MOON_PHASE_NAMES)("provides an informational description for %s", phase => {
-    expect(PHASE_DESCRIPTIONS[phase].length).toBeGreaterThan(30);
-    expect(PHASE_DESCRIPTIONS[phase]).toMatch(/increas|decreas|grows/);
-  });
+  it.each(MOON_PHASE_NAMES)(
+    "provides an informational description for %s",
+    (phase) => {
+      expect(PHASE_DESCRIPTIONS[phase].length).toBeGreaterThan(30);
+      expect(PHASE_DESCRIPTIONS[phase]).toMatch(/increas|decreas|grows/);
+    },
+  );
 
   it("renders the full data set, semantic statistics and unrounded decorative visual", () => {
     const model = createTodayMoonViewModel(fixedDate);
     const { container } = render(createElement(TodayMoonContent, { model }));
     const region = screen.getByRole("region", { name: model.moon.phaseName });
-    expect(within(region).getByRole("heading", { level: 2 }).textContent).toBe(model.moon.phaseName);
-    for (const label of [model.dateLabel, model.description, model.illuminationLabel, model.ageLabel,
-      model.countdownLabel]) {
+    expect(within(region).getByRole("heading", { level: 2 }).textContent).toBe(
+      model.moon.phaseName,
+    );
+    for (const label of [
+      model.dateLabel,
+      model.description,
+      model.illuminationLabel,
+      model.ageLabel,
+      model.countdownLabel,
+    ]) {
       expect(within(region).getByText(label)).toBeTruthy();
     }
-    expect(within(region).getByText(`${model.previousPhaseDateLabel} (UTC)`)).toBeTruthy();
-    expect(within(region).getByText(`${model.nextPhaseDateLabel} (UTC)`)).toBeTruthy();
-    expect(within(region).getByText(model.moon.previousMajorPhase.name, { selector: "dd" })).toBeTruthy();
-    expect(within(region).getByText(model.moon.nextMajorPhase.name, { selector: "dd" })).toBeTruthy();
+    expect(
+      within(region).getByText(`${model.previousPhaseDateLabel} (UTC)`),
+    ).toBeTruthy();
+    expect(
+      within(region).getByText(`${model.nextPhaseDateLabel} (UTC)`),
+    ).toBeTruthy();
+    expect(
+      within(region).getByText(model.moon.previousMajorPhase.name, {
+        selector: "dd",
+      }),
+    ).toBeTruthy();
+    expect(
+      within(region).getByText(model.moon.nextMajorPhase.name, {
+        selector: "dd",
+      }),
+    ).toBeTruthy();
     expect(container.querySelectorAll("dl dt")).toHaveLength(5);
     expect(container.querySelectorAll("dl dd")).toHaveLength(5);
     const moon = container.querySelector("svg");
     expect(moon?.getAttribute("data-phase")).toBe(model.moon.phaseName);
-    expect(moon?.getAttribute("data-illumination")).toBe(String(model.moon.illuminationPercentage));
+    expect(moon?.getAttribute("data-illumination")).toBe(
+      String(model.moon.illuminationPercentage),
+    );
     expect(moon?.getAttribute("aria-hidden")).toBe("true");
     expect(moon?.getAttribute("focusable")).toBe("false");
-    expect(container.querySelector("time")?.getAttribute("datetime")).toBe("2026-09-18");
+    expect(container.querySelector("time")?.getAttribute("datetime")).toBe(
+      "2026-09-18",
+    );
   });
 
   it("uses calendar-day estimates without negatives, including a same-date next phase", () => {
     let sawSameDate = false;
     for (let day = 1; day <= 30; day++) {
       const model = createTodayMoonViewModel({ year: 2026, month: 9, day });
-      const difference = (localDateToUtcNoon(model.moon.nextMajorPhase.date).getTime() -
-        localDateToUtcNoon(model.date).getTime()) / 86_400_000;
+      const difference =
+        (localDateToUtcNoon(model.moon.nextMajorPhase.date).getTime() -
+          localDateToUtcNoon(model.date).getTime()) /
+        86_400_000;
       expect(model.daysUntilNextPhase).toBe(Math.max(0, difference));
       expect(model.daysUntilNextPhase).toBeGreaterThanOrEqual(0);
       if (difference === 0) {
@@ -111,13 +141,19 @@ describe("visitor-local date and hydration", () => {
     try {
       await act(async () => {
         root = hydrateRoot(container, createElement(TodayMoon), {
-          onRecoverableError: error => errors.push(error),
+          onRecoverableError: (error) => errors.push(error),
         });
       });
       const model = createTodayMoonViewModel(fixedDate);
-      expect(container.querySelector("time")?.getAttribute("datetime")).toBe("2026-09-18");
-      expect(container.querySelector("h2")?.textContent).toBe(model.moon.phaseName);
-      expect(container.querySelector("svg")?.getAttribute("data-illumination")).toBe(String(model.moon.illuminationPercentage));
+      expect(container.querySelector("time")?.getAttribute("datetime")).toBe(
+        "2026-09-18",
+      );
+      expect(container.querySelector("h2")?.textContent).toBe(
+        model.moon.phaseName,
+      );
+      expect(
+        container.querySelector("svg")?.getAttribute("data-illumination"),
+      ).toBe(String(model.moon.illuminationPercentage));
       expect(errors).toEqual([]);
     } finally {
       await act(async () => root?.unmount());
@@ -144,15 +180,23 @@ describe("visitor-local date and hydration", () => {
     try {
       await act(async () => {
         root = hydrateRoot(container, createElement(HomeExperience), {
-          onRecoverableError: error => errors.push(error),
+          onRecoverableError: (error) => errors.push(error),
         });
       });
       expect(errors).toEqual([]);
-      const todayButton = container.querySelector('button[aria-current="date"]');
-      expect(todayButton?.getAttribute("aria-label")).toContain("Friday, September 18, 2026");
+      const todayButton = container.querySelector(
+        'button[aria-current="date"]',
+      );
+      expect(todayButton?.getAttribute("aria-label")).toContain(
+        "Friday, September 18, 2026",
+      );
       expect(todayButton?.getAttribute("aria-pressed")).toBe("true");
-      const heroMoon = container.querySelector('main.luna-home svg[data-size="lg"]');
-      expect(heroMoon?.getAttribute("data-phase")).toBe(getMoonData(fixedDate).phaseName);
+      const heroMoon = container.querySelector(
+        'main.luna-home svg[data-size="lg"]',
+      );
+      expect(heroMoon?.getAttribute("data-phase")).toBe(
+        getMoonData(fixedDate).phaseName,
+      );
     } finally {
       await act(async () => root?.unmount());
       container.remove();
