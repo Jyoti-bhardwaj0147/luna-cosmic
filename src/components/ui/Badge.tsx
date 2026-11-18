@@ -10,6 +10,18 @@ const variants: Record<BadgeVariant, string> = {
   neutral: "border-border-subtle bg-surface-glass text-text-secondary",
 };
 
-export function Badge({ children, className = "", variant = "violet", ...props }: BadgeProps) {
-  return <span className={`inline-flex min-h-7 items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-wide ${variants[variant]} ${className}`} {...props}>{children}</span>;
+export function Badge({
+  children,
+  className = "",
+  variant = "violet",
+  ...props
+}: BadgeProps) {
+  return (
+    <span
+      className={`inline-flex min-h-7 items-center rounded-full border px-3 py-1 text-xs font-semibold tracking-wide ${variants[variant]} ${className}`}
+      {...props}
+    >
+      {children}
+    </span>
+  );
 }
