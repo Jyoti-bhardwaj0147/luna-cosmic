@@ -1,4 +1,8 @@
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, PropsWithChildren } from "react";
+import type {
+  AnchorHTMLAttributes,
+  ButtonHTMLAttributes,
+  PropsWithChildren,
+} from "react";
 import Link from "next/link";
 
 type ButtonVariant = "primary" | "secondary" | "ghost";
@@ -11,10 +15,10 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 type ButtonLinkProps = PropsWithChildren<
   Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href"> & {
-  href: string;
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-  ariaLabel?: string;
+    href: string;
+    variant?: ButtonVariant;
+    size?: ButtonSize;
+    ariaLabel?: string;
   }
 >;
 
@@ -23,7 +27,8 @@ const styles: Record<ButtonVariant, string> = {
     "border border-transparent bg-[linear-gradient(110deg,var(--color-accent-primary),var(--color-accent-pink))] text-text-primary shadow-[var(--shadow-accent)] hover:brightness-110",
   secondary:
     "border border-border-strong bg-surface-glass text-text-primary shadow-[var(--shadow-soft)] hover:border-accent-light hover:bg-surface-elevated",
-  ghost: "border border-transparent text-text-secondary hover:bg-surface-glass hover:text-text-primary",
+  ghost:
+    "border border-transparent text-text-secondary hover:bg-surface-glass hover:text-text-primary",
 };
 
 const base =
@@ -35,13 +40,38 @@ const sizes: Record<ButtonSize, string> = {
   lg: "min-h-12 px-6 py-3 text-base",
 };
 
-export function Button({ className = "", variant = "primary", size = "md", type = "button", ...props }: ButtonProps) {
-  return <button className={`${base} ${styles[variant]} ${sizes[size]} ${className}`} type={type} {...props} />;
+export function Button({
+  className = "",
+  variant = "primary",
+  size = "md",
+  type = "button",
+  ...props
+}: ButtonProps) {
+  return (
+    <button
+      className={`${base} ${styles[variant]} ${sizes[size]} ${className}`}
+      type={type}
+      {...props}
+    />
+  );
 }
 
-export function ButtonLink({ children, className = "", href, variant = "primary", size = "md", ariaLabel, ...props }: ButtonLinkProps) {
+export function ButtonLink({
+  children,
+  className = "",
+  href,
+  variant = "primary",
+  size = "md",
+  ariaLabel,
+  ...props
+}: ButtonLinkProps) {
   return (
-    <Link aria-label={ariaLabel} className={`${base} ${styles[variant]} ${sizes[size]} ${className}`} href={href} {...props}>
+    <Link
+      aria-label={ariaLabel}
+      className={`${base} ${styles[variant]} ${sizes[size]} ${className}`}
+      href={href}
+      {...props}
+    >
       {children}
     </Link>
   );
