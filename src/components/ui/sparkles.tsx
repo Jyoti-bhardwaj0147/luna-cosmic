@@ -4,7 +4,7 @@ import Particles, { ParticlesProvider } from "@tsparticles/react";
 import type { Container, Engine, SingleOrMultiple } from "@tsparticles/engine";
 import { loadSlim } from "@tsparticles/slim";
 import { cn } from "@/lib/utils";
-import { motion, useAnimation } from "motion/react";
+import { motion, useAnimation, useReducedMotion } from "motion/react";
 
 type ParticlesProps = {
   id?: string;
@@ -34,13 +34,14 @@ export const SparklesCore = (props: ParticlesProps) => {
     particleDensity,
   } = props;
   const controls = useAnimation();
+  const reduceMotion = useReducedMotion();
 
   const particlesLoaded = async (container?: Container) => {
     if (container) {
       controls.start({
         opacity: 1,
         transition: {
-          duration: 1,
+          duration: reduceMotion ? 0 : 1,
         },
       });
     }
@@ -69,7 +70,7 @@ export const SparklesCore = (props: ParticlesProps) => {
             interactivity: {
               events: {
                 onClick: {
-                  enable: true,
+                  enable: false,
                   mode: "push",
                 },
                 onHover: {
@@ -170,7 +171,7 @@ export const SparklesCore = (props: ParticlesProps) => {
                 distance: {},
                 direction: "none",
                 drift: 0,
-                enable: true,
+                enable: false,
                 gravity: {
                   acceleration: 9.81,
                   enable: false,
@@ -216,13 +217,13 @@ export const SparklesCore = (props: ParticlesProps) => {
               },
               opacity: {
                 value: {
-                  min: 0.1,
+                  min: 0.25,
                   max: 1,
                 },
                 animation: {
                   count: 0,
-                  enable: true,
-                  speed: speed || 4,
+                  enable: reduceMotion === false,
+                  speed: speed ?? 1,
                   decay: 0,
                   delay: 0,
                   sync: false,
@@ -251,12 +252,12 @@ export const SparklesCore = (props: ParticlesProps) => {
               size: {
                 value: {
                   min: minSize || 1,
-                  max: maxSize || 3,
+                  max: maxSize || 2,
                 },
                 animation: {
                   count: 0,
                   enable: false,
-                  speed: 5,
+                  speed: 1,
                   decay: 0,
                   delay: 0,
                   sync: false,

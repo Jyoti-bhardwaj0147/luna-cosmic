@@ -77,7 +77,8 @@ export default function PhasesPage() {
           background="transparent"
           minSize={0.6}
           maxSize={1.4}
-          particleDensity={100}
+          speed={2}
+          particleDensity={80}
           className="w-full h-full"
           particleColor="#FFFFFF"
         />
@@ -96,9 +97,9 @@ export default function PhasesPage() {
               as="article"
               className="min-w-0 p-5"
               style={{
-                backgroundColor: "rgba(17, 13, 32, 0.38)",
-                backdropFilter: "blur(28px)",
-                WebkitBackdropFilter: "blur(28px)",
+                backgroundColor: "rgba(17, 13, 32, 0.28)",
+                backdropFilter: "blur(10px)",
+                WebkitBackdropFilter: "blur(10px)",
               }}
               key={phase}
             >
