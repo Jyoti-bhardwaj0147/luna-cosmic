@@ -45,18 +45,18 @@ export function Footer() {
         <div className="flex flex-col gap-2 py-4 text-xs items-center sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Luna Cosmic</p>
           <p className="group flex items-center gap-1 self-center sm:self-end text-right">
-            Made by<Link
+            Made by
+            <Link
               href="https://jyotiibhardwaj.com/"
               className="text-accent-light! inline-flex transition-colors hover:text-accent!"
-            >Jyotii&nbsp;
-            <Coffee
-              aria-hidden="true"
-              size={14}
-              className=" motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-12"
-            />
+            >
+              Jyotii&nbsp;
+              <Coffee
+                aria-hidden="true"
+                size={14}
+                className=" motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:-rotate-12"
+              />
             </Link>
-            
-            
           </p>
         </div>
       </Container>
