@@ -15,6 +15,8 @@ describe("getDaysUntilFullMoon", () => {
   });
 
   it("rejects invalid dates", () => {
-    expect(() => getDaysUntilFullMoon({ year: 2024, month: 2, day: 30 })).toThrow(RangeError);
+    expect(() =>
+      getDaysUntilFullMoon({ year: 2024, month: 2, day: 30 }),
+    ).toThrow(RangeError);
   });
 });

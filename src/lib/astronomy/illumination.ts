@@ -1,7 +1,10 @@
 import { Body, Illumination } from "astronomy-engine";
 import type { LocalDate } from "@/types/moon";
 import { localDateToUtcNoon } from "@/lib/dates/local-date";
-import { assertValidLocalDate, getMoonPhaseFraction } from "@/lib/astronomy/phases";
+import {
+  assertValidLocalDate,
+  getMoonPhaseFraction,
+} from "@/lib/astronomy/phases";
 
 export function getMoonIllumination(date: LocalDate): number {
   assertValidLocalDate(date);
@@ -10,7 +13,7 @@ export function getMoonIllumination(date: LocalDate): number {
 }
 
 export function calculateMoonIlluminationPercentage(
-  phaseFraction: number
+  phaseFraction: number,
 ): number {
   return ((1 - Math.cos(2 * Math.PI * phaseFraction)) / 2) * 100;
 }
