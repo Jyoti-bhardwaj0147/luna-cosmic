@@ -81,7 +81,11 @@ describe("expectValidLocalDate test helper", () => {
 
 describe("getMoonPhaseFraction", () => {
   test("returns a finite value within the documented cycle range", () => {
-    const phaseFraction = getMoonPhaseFraction({ year: 2024, month: 4, day: 15 });
+    const phaseFraction = getMoonPhaseFraction({
+      year: 2024,
+      month: 4,
+      day: 15,
+    });
 
     expectFiniteNumber(phaseFraction);
     expect(phaseFraction).toBeGreaterThanOrEqual(0);
@@ -89,9 +93,17 @@ describe("getMoonPhaseFraction", () => {
   });
 
   test("wraps around the phase cycle near a known New Moon", () => {
-    const dayBeforeNewMoon = getMoonPhaseFraction({ year: 2024, month: 3, day: 9 });
+    const dayBeforeNewMoon = getMoonPhaseFraction({
+      year: 2024,
+      month: 3,
+      day: 9,
+    });
     const newMoon = getMoonPhaseFraction(MARCH_2024_REFERENCE_DATES.newMoon);
-    const dayAfterNewMoon = getMoonPhaseFraction({ year: 2024, month: 3, day: 11 });
+    const dayAfterNewMoon = getMoonPhaseFraction({
+      year: 2024,
+      month: 3,
+      day: 11,
+    });
 
     expect(dayBeforeNewMoon).toBeGreaterThan(0.9);
     expect(newMoon).toBeLessThan(0.08);
@@ -109,14 +121,18 @@ describe("getMoonIllumination", () => {
   });
 
   test("is near its minimum around a known New Moon", () => {
-    const illumination = getMoonIllumination(MARCH_2024_REFERENCE_DATES.newMoon);
+    const illumination = getMoonIllumination(
+      MARCH_2024_REFERENCE_DATES.newMoon,
+    );
 
     // Civil dates are evaluated at UTC noon, about 3 hours after the reference instant.
     expect(illumination).toBeLessThan(2);
   });
 
   test("is near its maximum around a known Full Moon", () => {
-    const illumination = getMoonIllumination(MARCH_2024_REFERENCE_DATES.fullMoon);
+    const illumination = getMoonIllumination(
+      MARCH_2024_REFERENCE_DATES.fullMoon,
+    );
 
     // The full-moon reference instant is five hours before the UTC-noon sample.
     expect(illumination).toBeGreaterThan(98);
@@ -168,7 +184,9 @@ describe("getMoonPhase", () => {
 
     expect(getMoonPhaseName(justBeforeBoundary)).toBe("New Moon");
     expect(getMoonPhaseName(atBoundary)).toBe("Waxing Crescent");
-    expect(getMoonPhaseName(laterBoundary - Number.EPSILON)).toBe("First Quarter");
+    expect(getMoonPhaseName(laterBoundary - Number.EPSILON)).toBe(
+      "First Quarter",
+    );
     expect(getMoonPhaseName(laterBoundary)).toBe("Waxing Gibbous");
   });
 });
@@ -198,8 +216,12 @@ describe("surrounding major phases", () => {
     const selectedDate = { year: 2024, month: 1, day: 31 };
     const data = getMoonData(selectedDate);
 
-    expect(toTime(data.previousMajorPhase.date)).toBeLessThan(toTime(selectedDate));
-    expect(toTime(data.nextMajorPhase.date)).toBeGreaterThan(toTime(selectedDate));
+    expect(toTime(data.previousMajorPhase.date)).toBeLessThan(
+      toTime(selectedDate),
+    );
+    expect(toTime(data.nextMajorPhase.date)).toBeGreaterThan(
+      toTime(selectedDate),
+    );
     expect(data.nextMajorPhase.date.month).toBe(2);
   });
 
@@ -237,7 +259,10 @@ describe("getMoonData", () => {
 
     expect(data.phaseName).toBe(getMoonPhase(date));
     expect(data.phaseFraction).toBeCloseTo(getMoonPhaseFraction(date), 12);
-    expect(data.illuminationPercentage).toBeCloseTo(getMoonIllumination(date), 12);
+    expect(data.illuminationPercentage).toBeCloseTo(
+      getMoonIllumination(date),
+      12,
+    );
     expect(data.moonAgeDays).toBeCloseTo(getMoonAge(date), 12);
     expect(data.previousMajorPhase).toEqual(getPreviousMajorPhase(date));
     expect(data.nextMajorPhase).toEqual(getNextMajorPhase(date));
@@ -283,7 +308,7 @@ describe("date-related and invalid input cases", () => {
 
   test("throws a RangeError for invalid LocalDate values", () => {
     expect(() => getMoonData({ year: 2024, month: 2, day: 30 })).toThrow(
-      RangeError
+      RangeError,
     );
   });
 });

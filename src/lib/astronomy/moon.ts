@@ -19,7 +19,8 @@ export function getMoonData(date: LocalDate): MoonData {
   };
 }
 
-export const calculateMoonDetails: (date: LocalDate) => MoonDetails = getMoonData;
+export const calculateMoonDetails: (date: LocalDate) => MoonDetails =
+  getMoonData;
 
 export {
   getMoonAge,
