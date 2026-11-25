@@ -1,6 +1,13 @@
-import { MoonPhase, NextMoonQuarter, SearchMoonQuarter } from "astronomy-engine";
+import {
+  MoonPhase,
+  NextMoonQuarter,
+  SearchMoonQuarter,
+} from "astronomy-engine";
 import type { LocalDate, MoonMajorPhase, MoonPhaseName } from "@/types/moon";
-import { localDateToUtcNoon, utcInstantToLocalDate } from "@/lib/dates/local-date";
+import {
+  localDateToUtcNoon,
+  utcInstantToLocalDate,
+} from "@/lib/dates/local-date";
 import { MOON_QUARTER_PHASE_NAMES } from "@/constants/phases";
 
 export const SYNODIC_MONTH_DAYS = 29.530588853;
@@ -54,7 +61,7 @@ export function getMoonPhaseFraction(date: LocalDate): number {
 export function getPreviousMajorPhase(date: LocalDate): MoonMajorPhase {
   const selectedDate = dateToCalculationInstant(date);
   const searchStart = new Date(
-    selectedDate.getTime() - QUARTER_SEARCH_WINDOW_DAYS * MS_PER_DAY
+    selectedDate.getTime() - QUARTER_SEARCH_WINDOW_DAYS * MS_PER_DAY,
   );
   let previousQuarter = SearchMoonQuarter(searchStart);
   let nextQuarter = NextMoonQuarter(previousQuarter);
@@ -64,7 +71,10 @@ export function getPreviousMajorPhase(date: LocalDate): MoonMajorPhase {
     nextQuarter = NextMoonQuarter(nextQuarter);
   }
 
-  return moonMajorPhaseFromQuarter(previousQuarter.quarter, previousQuarter.time.date);
+  return moonMajorPhaseFromQuarter(
+    previousQuarter.quarter,
+    previousQuarter.time.date,
+  );
 }
 
 export function getNextMajorPhase(date: LocalDate): MoonMajorPhase {
@@ -80,8 +90,12 @@ export function getDaysUntilFullMoon(date: LocalDate): number {
   start.setUTCHours(0, 0, 0, 0);
   let quarter = SearchMoonQuarter(start);
   while (quarter.quarter !== 2) quarter = NextMoonQuarter(quarter);
-  const fullMoonDay = localDateToUtcNoon(utcInstantToLocalDate(quarter.time.date));
-  return Math.round((fullMoonDay.getTime() - localDateToUtcNoon(date).getTime()) / MS_PER_DAY);
+  const fullMoonDay = localDateToUtcNoon(
+    utcInstantToLocalDate(quarter.time.date),
+  );
+  return Math.round(
+    (fullMoonDay.getTime() - localDateToUtcNoon(date).getTime()) / MS_PER_DAY,
+  );
 }
 
 export function getMoonPhaseName(phaseFraction: number): MoonPhaseName {
@@ -131,7 +145,10 @@ export function getSurroundingMajorPhases(date: LocalDate): {
 export const calculateMoonPhaseFraction = getMoonPhaseFraction;
 export const calculateMoonAgeDays = getMoonAge;
 
-function moonMajorPhaseFromQuarter(quarter: number, date: Date): MoonMajorPhase {
+function moonMajorPhaseFromQuarter(
+  quarter: number,
+  date: Date,
+): MoonMajorPhase {
   const name = MOON_QUARTER_PHASE_NAMES[quarter];
 
   if (!name) {

@@ -16,14 +16,23 @@ export function isValidLocalDate(date: LocalDate): boolean {
   if (![year, month, day].every(Number.isInteger)) return false;
 
   const value = new Date(Date.UTC(year, month - 1, day, 12));
-  return value.getUTCFullYear() === year &&
-    value.getUTCMonth() === month - 1 && value.getUTCDate() === day;
+  return (
+    value.getUTCFullYear() === year &&
+    value.getUTCMonth() === month - 1 &&
+    value.getUTCDate() === day
+  );
 }
 
-export function createLocalDate(year: number, month: number, day: number): LocalDate {
+export function createLocalDate(
+  year: number,
+  month: number,
+  day: number,
+): LocalDate {
   const date = { year, month, day };
   if (!isValidLocalDate(date)) {
-    throw new RangeError("LocalDate must contain a supported, valid calendar date.");
+    throw new RangeError(
+      "LocalDate must contain a supported, valid calendar date.",
+    );
   }
   return date;
 }
@@ -35,16 +44,25 @@ export function localDateToUtcNoon(date: LocalDate): Date {
 }
 
 export function utcInstantToLocalDate(date: Date): LocalDate {
-  return createLocalDate(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate());
+  return createLocalDate(
+    date.getUTCFullYear(),
+    date.getUTCMonth() + 1,
+    date.getUTCDate(),
+  );
 }
 
 /** Explicit browser-local conversion for Today's Moon; not calendar arithmetic. */
 export function dateToLocalDate(date: Date): LocalDate {
-  return createLocalDate(date.getFullYear(), date.getMonth() + 1, date.getDate());
+  return createLocalDate(
+    date.getFullYear(),
+    date.getMonth() + 1,
+    date.getDate(),
+  );
 }
 
 function assertIntegerOffset(offset: number): void {
-  if (!Number.isSafeInteger(offset)) throw new RangeError("Date offsets must be safe integers.");
+  if (!Number.isSafeInteger(offset))
+    throw new RangeError("Date offsets must be safe integers.");
 }
 
 export function addDays(date: LocalDate, days: number): LocalDate {
@@ -56,8 +74,14 @@ export function addDays(date: LocalDate, days: number): LocalDate {
 export function addMonths(date: LocalDate, months: number): LocalDate {
   localDateToUtcNoon(date);
   assertIntegerOffset(months);
-  const target = utcInstantToLocalDate(new Date(Date.UTC(date.year, date.month - 1 + months, 1, 12)));
-  return createLocalDate(target.year, target.month, Math.min(date.day, getDaysInMonth(target)));
+  const target = utcInstantToLocalDate(
+    new Date(Date.UTC(date.year, date.month - 1 + months, 1, 12)),
+  );
+  return createLocalDate(
+    target.year,
+    target.month,
+    Math.min(date.day, getDaysInMonth(target)),
+  );
 }
 
 export function compareLocalDates(a: LocalDate, b: LocalDate): number {
@@ -66,8 +90,13 @@ export function compareLocalDates(a: LocalDate, b: LocalDate): number {
 
 /** Accepts explicit today/selected dates without reading the system clock. */
 export function isSameLocalDate(a: LocalDate, b: LocalDate): boolean {
-  return isValidLocalDate(a) && isValidLocalDate(b) &&
-    a.year === b.year && a.month === b.month && a.day === b.day;
+  return (
+    isValidLocalDate(a) &&
+    isValidLocalDate(b) &&
+    a.year === b.year &&
+    a.month === b.month &&
+    a.day === b.day
+  );
 }
 
 /** Preserves the options argument; locale defaults to en-US and UTC is enforced. */
@@ -76,14 +105,18 @@ export function formatLocalDate(
   options: Intl.DateTimeFormatOptions = {},
   locale = "en-US",
 ): string {
-  return new Intl.DateTimeFormat(locale, { ...options, timeZone: "UTC" })
-    .format(localDateToUtcNoon(date));
+  return new Intl.DateTimeFormat(locale, {
+    ...options,
+    timeZone: "UTC",
+  }).format(localDateToUtcNoon(date));
 }
 
 export function getDaysInMonth(month: CalendarMonth): number {
   createLocalDate(month.year, month.month, 1);
   // UTC day zero is intentional here, after validating the requested month.
-  return utcInstantToLocalDate(new Date(Date.UTC(month.year, month.month, 0, 12))).day;
+  return utcInstantToLocalDate(
+    new Date(Date.UTC(month.year, month.month, 0, 12)),
+  ).day;
 }
 
 function shiftMonth(month: CalendarMonth, offset: number): CalendarMonth {
@@ -99,16 +132,25 @@ export function getNextMonth(month: CalendarMonth): CalendarMonth {
   return shiftMonth(month, 1);
 }
 
-function buildMonthGrid(month: CalendarMonth, weekStartsOn: 0 | 1, fixedSixWeeks: boolean): CalendarDay[] {
+function buildMonthGrid(
+  month: CalendarMonth,
+  weekStartsOn: 0 | 1,
+  fixedSixWeeks: boolean,
+): CalendarDay[] {
   const first = createLocalDate(month.year, month.month, 1);
   const weekday = localDateToUtcNoon(first).getUTCDay();
   const leadingDays = (weekday - weekStartsOn + 7) % 7;
-  const length = fixedSixWeeks ? 42 : Math.max(35, Math.ceil((leadingDays + getDaysInMonth(month)) / 7) * 7);
+  const length = fixedSixWeeks
+    ? 42
+    : Math.max(35, Math.ceil((leadingDays + getDaysInMonth(month)) / 7) * 7);
   const start = addDays(first, -leadingDays);
 
   return Array.from({ length }, (_, index) => {
     const date = addDays(start, index);
-    return { date, isCurrentMonth: date.year === month.year && date.month === month.month };
+    return {
+      date,
+      isCurrentMonth: date.year === month.year && date.month === month.month,
+    };
   });
 }
 
