@@ -5,10 +5,7 @@ export type LocalDate = {
 };
 
 export type MajorMoonPhaseName =
-  | "New Moon"
-  | "First Quarter"
-  | "Full Moon"
-  | "Last Quarter";
+  "New Moon" | "First Quarter" | "Full Moon" | "Last Quarter";
 
 export type MoonPhaseName =
   | MajorMoonPhaseName
